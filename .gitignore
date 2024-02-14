@@ -1,3 +1,11 @@
+# Mac specific
+Icon?
+.DS_Store
+.DS_Store?
+*.DS_Store
+Thumbs.db
+Icon[\r]
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
