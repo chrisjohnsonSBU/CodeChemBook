@@ -3,7 +3,11 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-def quickPlot(x = None, y = None, xlabel = None, ylabel = None, template = "simple_white", mode = "lines", show = "png"):
+#
+# 1d plots
+#
+    
+def quickXY(x = None, y = None, xlabel = None, ylabel = None, template = "simple_white", mode = "lines", show = "png"):
     if type(x[0]) != np.ndarray and type(x[0]) != list: # then x is not an array or list
         xplot = [x]
     else:
@@ -42,5 +46,7 @@ def quickPlot(x = None, y = None, xlabel = None, ylabel = None, template = "simp
         qplot.show(show)
     return qplot
 
-def quickPlot2():
-    return
+#this is a wrapper for quickXY, in case people want to use quickxy
+def quickxy(x = None, y = None, xlabel = None, ylabel = None, template = "simple_white", mode = "lines", show = "png"):
+    return quickXY(x = x, y = y, xlabel = xlabel, ylabel = ylabel, template = template, mode = mode, show = show)
+    
