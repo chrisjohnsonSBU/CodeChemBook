@@ -3,4 +3,6 @@
 __version__ = "0.1.0"
 
 #from CompChemBook import *
-from .quickplots import quickPlot, quickPlot2
+from .quickplots import *
+from .plotlytemplates import *
+from .chemtools import *
