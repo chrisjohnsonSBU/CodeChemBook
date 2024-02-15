@@ -41,3 +41,6 @@ def quickPlot(x = None, y = None, xlabel = None, ylabel = None, template = "simp
     if show != False:
         qplot.show(show)
     return qplot
+
+def quickPlot2():
+    return
