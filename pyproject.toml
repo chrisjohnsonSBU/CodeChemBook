@@ -1,7 +1,7 @@
 # pyproject.toml
 
 [build-system]
-requires = ["kaleido>=0.1.0", "plotly", "lmfit", "setuptools"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
