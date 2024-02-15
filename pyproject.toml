@@ -1,7 +1,7 @@
 # pyproject.toml
 
 [build-system]
-requires = ["kaleido>=0.1.0", "plotly", "lmfit"]
+requires = ["kaleido>=0.1.0", "plotly", "lmfit", "setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,7 +9,6 @@ name = "CompChemBook"
 version = "0.1.0"
 description = "Companion package to 'Coding for Chemists' containing helpful functions for common tasks."
 readme = "README.md"
-authors = [{ name = "Chris Johnson", email = "tbd" }, { name = "Ben Lear", email = "tbd"}]
 license = { file = "LICENSE" }
 classifiers = [
     "License :: OSI Approved :: MIT License",
