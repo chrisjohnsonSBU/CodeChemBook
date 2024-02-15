@@ -6,3 +6,5 @@ __version__ = "0.1.0"
 from .quickplots import *
 from .plotlytemplates import *
 from .chemtools import *
+from .numericaltools import *
+from .fittools import *
