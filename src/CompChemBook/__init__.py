@@ -2,4 +2,5 @@
 
 __version__ = "0.1.0"
 
-from CompChemBook import *
+#from CompChemBook import *
+from .quickplots import quickPlot
