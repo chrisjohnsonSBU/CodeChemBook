@@ -102,5 +102,91 @@ def quickGrid(x = None, y = None, ncols = None, nrows = None, template = "simple
     gplot.update_layout(template = template)
     return gplot
 
+def quickBin(x, limits = None, nbins = None, width = None):
+    '''
+    Accepts a collection of numbers that can be coerced into a numpy array, and bins these numbers. 
+    If none of keyword arguments are specified, this results in a Freeman-Diaconis binning.
+    
+    Parameters
+    ----------
+    x : collection of numbers
+        must be coercable into numpy arrays
+    limits : float, optional
+        the upper and lower limits of the binning. The default is None, which means it will be determined by the limits of the data.
+    nbins : int, optional
+        the number of bins that are desired. If a float is provided, then it will be converted to an int. The default is None, which means this is automatically determined.
+    width : float, optional
+        the width of the bins. The default is None, which means it will be automatically determined.
 
+    Returns
+    -------
+    list
+        DESCRIPTION.
+
+    '''
+    try:
+        x = np.array(x)
+    except:
+        raise("the data need to be in a form that can be converted to a numpy array")
+    # we need to start by finding the limits and the bin width
+    
+    # we can start by getting the iqr, which might prove useful for formatting as well
+    q75, q25 = np.percentile(x, [75,25]) # find the places for the inner quartile
+    iqr = q75 - q25 # calculate the inner quartile range
+    
+    
+    # first thing: make sure we have a range to work with...
+    if limits == None: # then set the limis as the min and max of x
+        limits = [min(x), max(x)]
+        
+    if nbins != None and width != None:
+        raise("Specify either the number of bins, or the bin width, but not both.")
+    
+    # check to see if the width of the bins was specified...
+    if width == None and nbins == None: # then use the Freedman-Diaconis method to calculate bins
+        width = 2*iqr*len(x)**(-1/3)
+    
+    if nbins != None and width == None: # use the number of bins to determine the width
+        width = abs(limits[1] - limits[0]) / int(nbins)
+    
+    # the only other option is that width was directly specified.... 
+    # so now we are ready to go...
+    
+    # Define the bin edges using numpy's arange function
+    bin_edges = np.arange(limits[0], limits[1] + width, width)
+    
+    # Use numpy's histogram function to bin the data, using the bin edges we have calculated
+    bin_counts, _ = np.histogram(x, bins=bin_edges)
+    
+    # Calculate the bin centers by averaging each pair of consecutive edges
+    bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+    
+    
+    return [bin_centers, bin_counts]
+
+
+def quickHist(x, xlabel = None, ylabel = None, limits = None, nbins = None, width = None, mode = "counts", buffer = 0.05, template = "simple_white"):
+    # we will want the iqr for calculating the buffer space on the plot
+    q75, q25 = np.percentile(x, [75,25]) # find the places for the inner quartile
+    iqr = q75 - q25 # calculate the inner quartile range
+    
+    bin_centers, bin_counts = quickBin(x, limits = limits, nbins = nbins, width = width)
+    
+    # now we can plot a bar chart that looks like a histogram...
+    hist = make_subplots()
+    if mode == "counts":
+        bars = go.Bar(x = bin_centers, y = bin_counts)
+        hist.update_yaxes(title = "counts")
+    if mode == "freq": # we are doing frequency
+        bars = go.Bar(x = bin_centers, y = bin_counts/np.sum(x))
+        hist.update_yaxes(title = "frequency")
+    
+    hist.add_trace(bars)
+    hist.update_traces(marker = dict(line = dict(width = 1, color = "black")))
+    
+    hist.update_xaxes(title = xlabel, range = [min(bin_centers) - buffer*iqr, max(bin_centers) + buffer*iqr])
+    
+    hist.update_layout(bargap = 0, template = template)
+    hist.show("png")
+    return(hist)
 
