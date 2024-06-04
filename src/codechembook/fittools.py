@@ -17,7 +17,8 @@ def plotFit(fit,
             xlabel = None, 
             ylabel = None, 
             template = 'simple_white',
-            output = 'png'):
+            output = 'png',
+            colors = 'greys'):
     """
     Plot the result of a 1d fit using lmfit
     
@@ -45,23 +46,23 @@ def plotFit(fit,
     # Just making some variables for convenience
     # First figure out what hte independent variable name(s) is(are)
     independent_vars = fit.model.independent_vars
-    print(independent_vars)
+    #print(independent_vars)
     # The x data has to be the same for all the independent variables, so
     # so get it from the first one in the list for safety
     xdata = fit.userkws[independent_vars[0]]
-    print(xdata)
+    #print(xdata)
     ydata = fit.data
     
     # Resampling the fit so that it looks smooth to the eye
     smoothx = np.linspace(xdata.min(), xdata.max(), len(xdata)*resample)
-    print(smoothx)
+    #print(smoothx)
     # Need to handle the fact that there may be multiple names for the 
     # independent variable
     kwargs = {}
     for independent_var in independent_vars:
         kwargs[independent_var] = smoothx
     smoothy = fit.eval(**kwargs)
-    print(smoothy)
+    #print(smoothy)
     
     # If we are plotting the residual, then we need two subplots
     if residual:
@@ -97,7 +98,7 @@ def plotFit(fit,
         for comp in comps:
             fig.add_scatter(x = smoothx, 
                             y = comps[comp], 
-                            line = {'dash': 'dot'},
+                            line = {'dash': 'dot', 'color':'grey'},
                             row = 1, col = 1) 
     
     # Plot the raw data
@@ -106,7 +107,8 @@ def plotFit(fit,
                     mode = 'markers', 
                     name = 'Data', 
                     legendrank = 1, 
-                    marker = {'color': 'red'},
+                    marker = {'color': 'rgb(180,180,180)', 'size': 8},
+                    line = {'color': 'rgb(180,180,180)', 'width' : 8},
                     row = 1, col = 1)
 
     # Plot the fit curve
@@ -122,9 +124,10 @@ def plotFit(fit,
     if residual:
         fig.add_scatter(x = xdata, 
                         y = fit.residual, 
-                        mode = 'lines', 
+                        mode = 'markers+lines', 
                         name = 'Residual', 
-                        line = {'color': 'black'},
+                        line = {'color': 'black', 'width':1},
+                        marker = {'color': 'black', 'size':2},
                         showlegend = False,
                         row = 2, col = 1)
         
