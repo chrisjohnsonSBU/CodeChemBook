@@ -46,36 +46,21 @@ def plotFit(fit,
     # Just making some variables for convenience
     # First figure out what the independent variable name(s) is(are)
     independent_vars = fit.model.independent_vars
-<<<<<<< Updated upstream
-    #print(independent_vars)
-    # The x data has to be the same for all the independent variables, so
-    # so get it from the first one in the list for safety
-    xdata = fit.userkws[independent_vars[0]]
-    #print(xdata)
-=======
 
     # The x data has to be the same for all the independent variables, so
     # so get it from the first one in the list for safety
     xdata = fit.userkws[independent_vars[0]]
->>>>>>> Stashed changes
     ydata = fit.data
     
     # Resampling the fit so that it looks smooth to the eye
     smoothx = np.linspace(xdata.min(), xdata.max(), len(xdata)*resample)
-<<<<<<< Updated upstream
-    #print(smoothx)
-=======
->>>>>>> Stashed changes
+
     # Need to handle the fact that there may be multiple names for the 
     # independent variable
     kwargs = {}
     for independent_var in independent_vars:
         kwargs[independent_var] = smoothx
     smoothy = fit.eval(**kwargs)
-<<<<<<< Updated upstream
-    #print(smoothy)
-=======
->>>>>>> Stashed changes
     
     # If we are plotting the residual, then we need two subplots
     if residual:
