@@ -6,7 +6,7 @@
 ###############################################################################
 
 import numpy as np
-import scipy.integrate as integ
+import scipy.integrate as spi
 
 def integrateRange(y, x, limits, method='trapezoid'):
     """
@@ -33,16 +33,16 @@ def integrateRange(y, x, limits, method='trapezoid'):
     
     # Decide which integration method the user wants
     if method == 'simpson':
-        return integ.simpson(y[integ_range], x[integ_range])
+        return spi.simpson(y[integ_range], x[integ_range])
     
     elif method == 'rectangle':
-        return np.sum(y[integ_range[:-1]] * (x[integ_range[1:] 
-                                               - integ_range[:-1]]))
+        return np.sum(y[integ_range[:-1]] * (x[integ_range[1:]] 
+                                               - x[integ_range[:-1]]))
     
     else:
         # Maybe the user typed something wrong into the method keyword
         if method != 'trapezoid':
             print('Invalid method specified, defaulting to trapezoid')
             print('Please choose rectangle, trapezoid, or simpson')
-        return integ.trapezoid(y[integ_range], x[integ_range])
+        return spi.trapezoid(y[integ_range], x[integ_range])
     

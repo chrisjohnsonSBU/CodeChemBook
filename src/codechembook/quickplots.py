@@ -9,7 +9,7 @@ import plotly.io as pio
 # 1d plots
 #
     
-def quickXY(x = None, y = None, xlabel = None, ylabel = None, template = "simple_white", mode = "lines", show = "png"):
+def quickScatter(x = None, y = None, xlabel = None, ylabel = None, name = None, template = "simple_white", mode = None, output = "png"):
     """
     Quickly plot one xy trace in plotly.
 
@@ -50,12 +50,16 @@ def quickXY(x = None, y = None, xlabel = None, ylabel = None, template = "simple
     
     # start the plotting
     qplot = make_subplots()
-    
-    
-    for xi,yi in zip(xplot, yplot):
+        
+    for xi,yi,ni in zip(xplot, yplot, name):
         if len(xi) != len(yi):
             raise "you do not have the same number of x and y points!"
-        points = go.Scatter(x=xi, y = yi, mode = mode)
+        if mode is None:
+            points = go.Scatter(x=xi, y = yi, name = ni)
+        elif "lines" in mode or "markers" in mode:
+            points = go.Scatter(x=xi, y = yi, mode = mode, name = ni)
+        else:
+            raise "please enter either 'lines', 'markers', 'lines+markers', or None for mode"
         qplot.add_trace(points)
     
     qplot.update_xaxes(title = str(xlabel)) # cast as string to handle numeric values if passed
@@ -68,19 +72,14 @@ def quickXY(x = None, y = None, xlabel = None, ylabel = None, template = "simple
     qplot.update_layout(template = template)
     
     # Plot the figure to the specified output
-    if show in pio.renderers.keys():
-        qplot.show(show)
-    elif show == 'None':
+    if output in pio.renderers.keys():
+        qplot.show(output)
+    elif output is None:
         return qplot
     else:
         print("Enter 'png' to plot in Spyder or 'browser' for the browser.")
         print("Use 'None' to show nothing and return the figure object.")
     return qplot
-
-#this is a wrapper for quickXY, in case people want to use quickxy
-def quickxy(x = None, y = None, xlabel = None, ylabel = None, template = "simple_white", mode = "lines", show = "png"):
-    return quickXY(x = x, y = y, xlabel = xlabel, ylabel = ylabel, template = template, mode = mode, show = show)
-
 
 def quickGrid(x = None, y = None, ncols = None, nrows = None, template = "simple_white"):
     # first make sure that we have lists of lists... 

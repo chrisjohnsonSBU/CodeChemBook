@@ -37,32 +37,45 @@ def plotFit(fit,
         template (string): which plotly template to use
         output (string):   output to Spyder plot window ('png') 
                            or browser ('browser')
-                           or 'None' for no output
+                           or None for no output
 
     Returns:
         fig (plotly figure object): the figure object created
     """
     
     # Just making some variables for convenience
-    # First figure out what hte independent variable name(s) is(are)
+    # First figure out what the independent variable name(s) is(are)
     independent_vars = fit.model.independent_vars
+<<<<<<< Updated upstream
     #print(independent_vars)
     # The x data has to be the same for all the independent variables, so
     # so get it from the first one in the list for safety
     xdata = fit.userkws[independent_vars[0]]
     #print(xdata)
+=======
+
+    # The x data has to be the same for all the independent variables, so
+    # so get it from the first one in the list for safety
+    xdata = fit.userkws[independent_vars[0]]
+>>>>>>> Stashed changes
     ydata = fit.data
     
     # Resampling the fit so that it looks smooth to the eye
     smoothx = np.linspace(xdata.min(), xdata.max(), len(xdata)*resample)
+<<<<<<< Updated upstream
     #print(smoothx)
+=======
+>>>>>>> Stashed changes
     # Need to handle the fact that there may be multiple names for the 
     # independent variable
     kwargs = {}
     for independent_var in independent_vars:
         kwargs[independent_var] = smoothx
     smoothy = fit.eval(**kwargs)
+<<<<<<< Updated upstream
     #print(smoothy)
+=======
+>>>>>>> Stashed changes
     
     # If we are plotting the residual, then we need two subplots
     if residual:
@@ -146,9 +159,12 @@ def plotFit(fit,
                             row = 2, col = 1,
                             fill = 'tonexty')
         # Limit the ticks on the Residual axis so that it is readable
-        fig.update_yaxes(nticks = 3, row = 2)
+        residual_lim = np.max(np.abs(fit.residual)) * 1.05
+        fig.update_yaxes(title = 'Residual', 
+                         range = [-residual_lim, residual_lim], 
+                         nticks = 3, zeroline = True, row = 2)
         
-        fig.update_yaxes(title = 'Residual', row = 2)
+        #fig.update_yaxes(title = 'Residual', row = 2)
     
     # If the user supplied an x axis label, add it
     if type(xlabel) == str:
@@ -168,7 +184,7 @@ def plotFit(fit,
     # Plot the figure to the specified output
     if output in pio.renderers.keys():
         fig.show(output)
-    elif output == 'None':
+    elif output is None or output == 'None':
         return fig
     else:
         print("Enter 'png' to plot in Spyder or 'browser' for the browser.")
