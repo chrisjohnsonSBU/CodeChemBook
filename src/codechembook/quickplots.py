@@ -4,6 +4,7 @@ import math
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.io as pio
+import json
 
 #
 # 1d plots
@@ -123,7 +124,7 @@ def quickGrid(x = None, y = None, ncols = None, nrows = None, template = "simple
         
         # find the row and column number we are on
         row = int(i/ncols) + 1
-        col = (i+1)%ncols
+        col = (label)%ncols
         
         #add the trace to those
         gplot.add_trace(trace, row = row, col = col)
@@ -219,3 +220,79 @@ def quickHist(x, xlabel = None, ylabel = None, limits = None, nbins = None, widt
     hist.show("png")
     return(hist)
 
+
+
+    
+
+
+
+def quickSubs(childPlots = None, layoutfig = None, nrows = None, ncols = None):
+    if nrows == None and ncols == None: # we have specified nothing about the grid to use
+        ncols = math.ceil(len(childPlots)**0.5)
+        nrows = math.ceil(len(childPlots)/ncols)
+    elif nrows == None: # we have only specified the number of columns to use
+        nrows = math.ceil(len(childPlots)/ncols)
+    elif ncols == None: # we have only specified the number of rows to use
+        ncols = math.ceil(len(childPlots)/nrows)
+    
+    newfig = make_subplots(rows = nrows, cols = ncols)
+    newfigdict = json.loads(newfig.to_json()) # add stuff to this one. <-- need to do this, because we will use the 
+    # print(newfigdict)
+    # print('end of first newfigdict \n')
+    #print(nrows, ncols)
+    
+    #figdict = {"data":[], "layout":{}}
+    
+    for i, cp in enumerate(childPlots):
+        
+        if i == 0: # do not with to append the number
+            label = ''
+        else:
+            label = i+1
+        
+        # specify which row and column we are working on
+        row = int(i/ncols)+1
+        col = int(i%ncols)+1
+        
+        # now parse the figure...
+        oldfigdict = json.loads(cp.to_json()) 
+        for entry in oldfigdict["data"]: # get the indiviual dictionaries in the data list
+            entry["xaxis"] = f"x{label}"
+            entry["yaxis"] = f"y{label}"
+            newfigdict["data"].append(entry) # add modified version to the new figure
+        # print(oldfigdict)
+        # print('\n')
+        # print(i, '\nbefore')
+        # print(oldfigdict['layout']["xaxis"])       
+        # oldfigdict["layout"][f"xaxis{label}"] = oldfigdict["layout"]["xaxis"] #rename x-axis key
+        # oldfigdict["layout"][f"yaxis{label}"] = oldfigdict["layout"]["yaxis"] #rename y-axis key
+        
+        # oldfigdict["layout"][f"xaxis{label}"]["anchor"] = f"y{label}"
+        # oldfigdict["layout"][f"yaxis{label}"]["anchor"] = f"x{label}"
+
+        temp_x_domain = newfigdict["layout"][f"xaxis{label}"]["domain"]
+        temp_y_domain = newfigdict["layout"][f"yaxis{label}"]["domain"]
+
+        newfigdict["layout"][f"xaxis{label}"] = oldfigdict["layout"][f"xaxis"]
+        newfigdict["layout"][f"yaxis{label}"] = oldfigdict["layout"][f"yaxis"]
+        newfigdict["layout"][f"xaxis{label}"]['domain'] = temp_x_domain
+        newfigdict["layout"][f"yaxis{label}"]['domain'] = temp_y_domain
+        newfigdict["layout"][f"xaxis{label}"]["anchor"] = f"y{label}" # the anchor for x is relative to y-position
+        newfigdict["layout"][f"yaxis{label}"]["anchor"] = f"x{label}" # the anchor for y is relative to x-position
+        # newfigdict["layout"][f"xaxis{label}"] = oldfigdict["layout"][f"xaxis{label}"]
+        # newfigdict["layout"][f"yaxis{label}"] = oldfigdict["layout"][f"yaxis{label}"]
+        # print(i, '\nafter')
+        # print(oldfigdict['layout'][f"xaxis{label}"])
+    # set up the layout....
+    if layoutfig == None:
+        layoutfig = childPlots[0]
+    layoutfigdict = json.loads(layoutfig.to_json())
+    for key in layoutfigdict["layout"]:
+        if "axis" not in key: #make sure we are not editing axes, only everything else. 
+            newfigdict["layout"][key] = layoutfigdict["layout"][key]
+                
+    newfigjson = json.dumps(newfigdict)
+    # print(newfigdict)
+    newfig = pio.from_json(newfigjson)
+    
+    return newfig
