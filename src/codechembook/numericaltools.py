@@ -5,7 +5,6 @@
 #
 ###############################################################################
 
-import numpy as np
 import scipy.integrate as spi
 
 def integrateRange(y, x, limits, method='trapezoid'):
@@ -29,7 +28,7 @@ def integrateRange(y, x, limits, method='trapezoid'):
     limits.sort()
 
     # Find the indicies of the range that we want to integrate
-    integ_range = np.logical_and(x >= limits[0], x < limits[1])
+    integ_range = (x >= limits[0]) & (x < limits[1])
     
     # Decide which integration method the user wants
     if method == 'simpson':

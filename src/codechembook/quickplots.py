@@ -51,7 +51,8 @@ def quickScatter(x = None, y = None, xlabel = None, ylabel = None, name = None, 
     
     # start the plotting
     qplot = make_subplots()
-        
+    if name is None:
+        name = ['' for x in xplot]
     for xi,yi,ni in zip(xplot, yplot, name):
         if len(xi) != len(yi):
             raise "you do not have the same number of x and y points!"
