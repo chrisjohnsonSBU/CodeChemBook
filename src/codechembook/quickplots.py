@@ -151,9 +151,8 @@ def quickBin(x, limits = None, nbins = None, width = None):
 
     Returns
     -------
-    list
-        DESCRIPTION.
-
+    [bin_centers, bin_counts]: list of ndarray
+        a list containing arrays holding the centers of bins and their corresonding counts
     '''
     try:
         x = np.array(x)
@@ -197,6 +196,35 @@ def quickBin(x, limits = None, nbins = None, width = None):
 
 
 def quickHist(x, xlabel = None, ylabel = None, limits = None, nbins = None, width = None, mode = "counts", buffer = 0.05, template = "simple_white"):
+    """
+    
+    
+    Parameters
+    ----------
+    x : TYPE
+        DESCRIPTION.
+    xlabel : TYPE, optional
+        DESCRIPTION. The default is None.
+    ylabel : TYPE, optional
+        DESCRIPTION. The default is None.
+    limits : TYPE, optional
+        DESCRIPTION. The default is None.
+    nbins : TYPE, optional
+        DESCRIPTION. The default is None.
+    width : TYPE, optional
+        DESCRIPTION. The default is None.
+    mode : TYPE, optional
+        DESCRIPTION. The default is "counts".
+    buffer : TYPE, optional
+        DESCRIPTION. The default is 0.05.
+    template : TYPE, optional
+        DESCRIPTION. The default is "simple_white".
+
+    Returns
+    -------
+    None.
+
+    """
     # we will want the iqr for calculating the buffer space on the plot
     q75, q25 = np.percentile(x, [75,25]) # find the places for the inner quartile
     iqr = q75 - q25 # calculate the inner quartile range
