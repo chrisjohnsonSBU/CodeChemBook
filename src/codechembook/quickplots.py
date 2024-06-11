@@ -83,7 +83,37 @@ def quickScatter(x = None, y = None, xlabel = None, ylabel = None, name = None, 
         print("Use 'None' to show nothing and return the figure object.")
     return qplot
 
-def quickGrid(x = None, y = None, ncols = None, nrows = None, template = "simple_white"):
+
+
+def quickGrid(x = None, labels = None, template = "simple_white"):
+    '''
+    Takes a series of array and plots correlation between them...
+    
+    Work in progress.  To do:
+        place label in the diagonals
+        add fitting
+        check to make sure all arrays are the same length
+
+    Parameters
+    ----------
+    x : list of ndarrays or lists of numbers, optional
+        This is the set of data to check correlations for. The default is None.
+    labels : list of strings, optional
+        If you wish to specify labels for the arrays, you can do it here. The default is None.
+    template : string, optional
+        string that corresponds to a named plotly template. The default is "simple_white".
+
+    Raises
+    ------
+    
+        DESCRIPTION.
+
+    Returns
+    -------
+    gplot : Plotly figure object
+        The figure object showing correlations between plots.
+
+    '''
     # first make sure that we have lists of lists... 
     # so this first section makes sure that, if we get a single list, we put it in a list
     if type(x[0]) != np.ndarray and type(x[0]) != list: # then x is not an array or list
@@ -92,45 +122,32 @@ def quickGrid(x = None, y = None, ncols = None, nrows = None, template = "simple
         try: 
             xplot = x # if already an array of arrays, then just keep it
         except:
-            raise "You need to supply a list or array of floats or ints"
-    if type(y[0]) != np.ndarray and type(y[0]) != list: # then y is not an array or list
-        yplot = [y]
-    else:
-        try: 
-            yplot = y # if already an array of arrays, then just keep it
-        except:
-            raise "You need to supply a list or array of floats or ints"
+            raise "You need to supply a list or ndarray of floats or ints"
     
-    #next, let us ensure we can iterate through x and y together
-    if len(xplot) == 1:
-        xplot = [xplot[0]]*len(yplot)
-    elif len(xplot) != len(yplot):
-        raise "your x values should be a list of length equal to y values, or a list of 1"
+    narrays = len(x)
+    gplot = make_subplots(cols = narrays, rows = narrays) # make a square plot
     
-    # now, create a grid
-    if ncols == None and nrows == None:
-        ncols = int(np.sqrt(len(xplot))) # number of colums is equal to the truncated square root of the 
-        nrows = math.ceil(len(xplot)/ncols) # number of rows we will need
-    elif ncols != None and nrows != None:
-        if ncols*nrows < len(xplot):
-            raise "ncols*nrows is not large enough"
-    elif ncols != None:
-        nrows = math.ceil(len(xplot)/ncols)
-    else:
-        ncols = math.ceil(len(xplot)/nrows)
-    
-    gplot = make_subplots(rows = nrows, cols = ncols)
-    for i, xi in enumerate(xplot):
-        trace = go.Scatter(x = xplot[i], y = yplot[i])
-        
-        # find the row and column number we are on
-        row = int(i/ncols) + 1
-        col = (label)%ncols
-        
-        #add the trace to those
-        gplot.add_trace(trace, row = row, col = col)
-    
+    for j, x1 in enumerate(x): # go through each y array
+        for i, x2 in enumerate(x): # go through each x array
+            if i == j:
+                pass
+            else:
+                gplot.add_scatter(x = x1, y = x2, 
+                                  showlegend=False, 
+                                  row = i+1, col = j+1)
+                try:
+                    ylabel = labels[j]
+                except:
+                    ylabel = f"y-series {j}"
+                try:
+                    xlabel = labels[i]
+                except:
+                    xlabel = f"x-series {i}"
+                gplot.update_xaxes(title = xlabel, row = i+1, col = j+1)
+                gplot.update_yaxes(title = ylabel, row = i+1, col = j+1)
+                
     gplot.update_layout(template = template)
+    gplot.show("png")
     return gplot
 
 def quickBin(x, limits = None, nbins = None, width = None):
@@ -201,28 +218,28 @@ def quickHist(x, xlabel = None, ylabel = None, limits = None, nbins = None, widt
     
     Parameters
     ----------
-    x : TYPE
-        DESCRIPTION.
-    xlabel : TYPE, optional
-        DESCRIPTION. The default is None.
-    ylabel : TYPE, optional
-        DESCRIPTION. The default is None.
-    limits : TYPE, optional
-        DESCRIPTION. The default is None.
-    nbins : TYPE, optional
-        DESCRIPTION. The default is None.
-    width : TYPE, optional
-        DESCRIPTION. The default is None.
-    mode : TYPE, optional
-        DESCRIPTION. The default is "counts".
-    buffer : TYPE, optional
-        DESCRIPTION. The default is 0.05.
+    x : list or ndarray
+        The collection of numbers to be displayed as a histogram.
+    xlabel : string, optional
+        The title for the x-axis. The default is None.
+    ylabel : string, optional
+        The title for the y-axis. The default is None.
+    limits : int or float, optional
+        The upper and lower limits of the binning. The default is None, which means it will be determined by the limits of the data.
+    nbins : int, optional
+        Number of bins that you wish. If specified, then the range of data is divided by this number to find the bin widths
+    width : int or float, optional
+        The width of the bins desired.  If specified, then they are applied, starting at the lowest part of the range, upward. The default is None.
+    mode : string, optional
+        This specifies if counts or frequency is desired on the y-axis. The default is "counts".
+    buffer : int or float, optional
+        The fraction of the total range that is added to the left and right side of the x-axis. The default is 0.05.
     template : TYPE, optional
-        DESCRIPTION. The default is "simple_white".
+        Any valid name for a Plotly template. The default is "simple_white".
 
     Returns
     -------
-    None.
+    A plotly figure object.  In this object, the histogram is rendered as a bar chart.
 
     """
     # we will want the iqr for calculating the buffer space on the plot
@@ -256,6 +273,27 @@ def quickHist(x, xlabel = None, ylabel = None, limits = None, nbins = None, widt
 
 
 def quickSubs(childPlots = None, layoutfig = None, nrows = None, ncols = None):
+    '''
+    Takes an arbitrary number of Plotly figure objects, and plots them together on a single Plotly figure. 
+    Each figure object supplied is turned into a subplot in the Figure. 
+
+    Parameters
+    ----------
+    childPlots : list of Plotly figure objects, optional
+        These are the plots to be added to the new subplot figure. The default is None.
+    layoutfig : Plotly figure object, optional
+        Provides the figure object from which to take the formatting for the new figure. If None, then the last plot in the child plot list is used. The default is None.
+    nrows : int, optional
+        Specifies the number of rows to use in the new figure. The default is None.
+    ncols : int, optional
+        Specifies the number of columns to use in the new figure. The default is None.
+
+    Returns
+    -------
+    newfig : Plotly figure object
+        The new figure object, containing subplots of all the supplied child plots.
+
+    '''
     if nrows == None and ncols == None: # we have specified nothing about the grid to use
         ncols = math.ceil(len(childPlots)**0.5)
         nrows = math.ceil(len(childPlots)/ncols)
