@@ -4,10 +4,22 @@ import plotly.graph_objects as go
 # if you dont' specify anything you basically get simple_white
 def chemPlot(name, ratio = None, font = None, colors = None, legend = "top-right"): # default ratio is US paper
     '''
-    name: string that specifies the template in chemTemplates
-    aratio: foat that specifies the desired aspect ratio of width/height
-    cProg: list of color values that specify the colors that are cycled through
-    dpi: the desired pixels per inch, and this is used to determine text size, linewidth, marker size, etc. 
+    Gets plotly layouts that produce figures that are formatted specific journals
+    
+    Required parameters:
+    name: string
+        specifies the template in chemTemplates
+    
+    Optional parameters:
+    aratio: foat
+        specifies the desired aspect ratio of width/height
+    cProg: list of color values 
+        specify the colors that are cycled through
+    dpi: numeric
+        the desired pixels per inch, and this is used to determine text size, linewidth, marker size, etc. 
+    
+    Return:
+        plotly layout object containing the specified parameters
     '''
     
     if "JACS" in name: # from appendix 2 of https://publish.acs.org/publish/author_guidelines?coden=jacsat#preparing_graphics
