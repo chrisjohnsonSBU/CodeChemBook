@@ -27,15 +27,16 @@ def plotFit(fit,
         
     Optional Args:
         resample (int):    increase the density of points on the x axis by N 
-                           times for a smoother model fit curve
-        residual (bool):   plot the residual
-        components (bool): plot the individual components of the model
-        confidence (int):  plot the confidence interval of the fit (N-sigma)
-                           where N = 0 (default), 1, 2, etc.
-        xlabel (string):   x axis title
-        ylabel (string):   y axis title
-        template (string): which plotly template to use
-        output (string):   output to Spyder plot window ('png') 
+                           times for a smoother model fit curve (default: 10)
+        residual (bool):   plot the residual (default: False)
+        components (bool): plot the individual components of the model (default: False)
+        confidence (int):  plot the confidence interval of the fit (N-sigma) (default: 0)
+                           where N = 0 (default), 1, 2, etc. (default: 0)
+        xlabel (string):   x axis title (default: None)
+        ylabel (string):   y axis title (default: None)
+        template (string): which plotly template to use (default: 'simple_white')
+        colors (string):   color scheme to use (default: 'greys')
+        output (string):   output to Spyder plot window ('png', default) 
                            or browser ('browser')
                            or None for no output
 

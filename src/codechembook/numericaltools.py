@@ -18,7 +18,7 @@ def integrateRange(y, x, limits, method='trapezoid'):
         limits (list of numeric): the lower and upper limit of integration
         
     Optional Args:
-        method (string): which approach to use (rectangle, trapezoid, simpson)
+        method (string): which approach to use (trapezoid (default), rectangle, simpson)
         
     Returns:
         (float): the value of the integral

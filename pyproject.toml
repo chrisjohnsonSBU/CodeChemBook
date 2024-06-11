@@ -16,8 +16,8 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 keywords = ["chemistry", "plotting", "plotly", "histogram"]
-dependencies = ["kaleido>=0.1.0", "plotly", "lmfit"]
+dependencies = ["kaleido>=0.1.0", "plotly", "lmfit", "numpy", "scipy"]
 requires-python = ">=3.11"
 
 [project.urls]
-Homepage = "tbd"
+Homepage = "https://www.codechembook.com"
