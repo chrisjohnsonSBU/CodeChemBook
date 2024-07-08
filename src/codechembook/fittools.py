@@ -8,6 +8,7 @@
 import numpy as np
 from plotly.subplots import make_subplots
 import plotly.io as pio
+import quickplots
 
 def plotFit(fit, 
             resample = 10, 
@@ -168,12 +169,6 @@ def plotFit(fit,
     fig.update_layout(template = template, showlegend = False)
 
     # Plot the figure to the specified output
-    if output in pio.renderers.keys():
-        fig.show(output)
-    elif output is None or output == 'None':
-        return fig
-    else:
-        print("Enter 'png' to plot in Spyder or 'browser' for the browser.")
-        print("Use 'None' to show nothing and return the figure object.")
-    
+    quickplots.process_output(fig, output) # check to see how we should be outputting this plot
+
     return fig

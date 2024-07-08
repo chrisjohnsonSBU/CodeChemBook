@@ -9,6 +9,19 @@ import json
 #
 # 1d plots
 #
+
+def process_output(plot, output):
+    # Plot the figure to the specified output
+    if output in pio.renderers.keys():
+        plot.show(output)
+    elif output == "default":
+        plot.show()
+    elif output is None:
+        pass # no need to do anything
+    else:
+        print("Enter 'png' to plot in Spyder or 'browser' for the browser.")
+        print("Use 'None' to show nothing and return the figure object.")
+    
     
 def quickScatter(x = None, y = None, xlabel = None, ylabel = None, name = None, template = "simple_white", mode = None, output = "png"):
     """
@@ -21,8 +34,9 @@ def quickScatter(x = None, y = None, xlabel = None, ylabel = None, name = None, 
         ylabel (string):                y axis title
         mode (string):                  plot using 'lines'(default) or 'markers'
         template (string):              which plotly template to use (default simple_white)
-        show (string):                  output to Spyder plot window ('png') (default)
+        show (string):                  output to Spyder plot window ('png', 'svg')
                                            or browser ('browser')
+                                           or the 'normal' show behavior ('default')
                                            or 'None' for no output
                     
     Returns:
@@ -73,19 +87,13 @@ def quickScatter(x = None, y = None, xlabel = None, ylabel = None, name = None, 
         template = 'simple_white'
     qplot.update_layout(template = template)
     
-    # Plot the figure to the specified output
-    if output in pio.renderers.keys():
-        qplot.show(output)
-    elif output is None:
-        return qplot
-    else:
-        print("Enter 'png' to plot in Spyder or 'browser' for the browser.")
-        print("Use 'None' to show nothing and return the figure object.")
+    process_output(qplot, output) # check to see how we should be outputting this plot
+    
     return qplot
 
 
 
-def quickGrid(x = None, labels = None, template = "simple_white"):
+def quickGrid(x = None, labels = None, template = "simple_white", output = "png"):
     '''
     Takes a series of array and plots correlation between them...
     
@@ -147,7 +155,9 @@ def quickGrid(x = None, labels = None, template = "simple_white"):
                 gplot.update_yaxes(title = ylabel, row = i+1, col = j+1)
                 
     gplot.update_layout(template = template)
-    gplot.show("png")
+
+    process_output(gplot, output)
+    
     return gplot
 
 def quickBin(x, limits = None, nbins = None, width = None):
@@ -212,7 +222,12 @@ def quickBin(x, limits = None, nbins = None, width = None):
     return [bin_centers, bin_counts]
 
 
-def quickHist(x, xlabel = None, ylabel = None, limits = None, nbins = None, width = None, mode = "counts", buffer = 0.05, template = "simple_white"):
+def quickHist(x, 
+              xlabel = None, ylabel = None, 
+              limits = None, nbins = None, width = None, 
+              mode = "counts", buffer = 0.05, 
+              template = "simple_white",
+              output = "png"):
     """
     
     
@@ -236,6 +251,8 @@ def quickHist(x, xlabel = None, ylabel = None, limits = None, nbins = None, widt
         The fraction of the total range that is added to the left and right side of the x-axis. The default is 0.05.
     template : TYPE, optional
         Any valid name for a Plotly template. The default is "simple_white".
+    output : string or Nonetype, optional
+        Any valid key for showing a plot in plotly. Common options include "png", "svg", or "browser"
 
     Returns
     -------
@@ -258,21 +275,22 @@ def quickHist(x, xlabel = None, ylabel = None, limits = None, nbins = None, widt
         hist.update_yaxes(title = "frequency")
     
     hist.add_trace(bars)
+    
     hist.update_traces(marker = dict(line = dict(width = 1, color = "black")))
     
     hist.update_xaxes(title = xlabel, range = [min(bin_centers) - buffer*iqr, max(bin_centers) + buffer*iqr])
     
     hist.update_layout(bargap = 0, template = template)
-    hist.show("png")
-    return(hist)
-
-
-
     
+    process_output(hist, output)
+    
+    return hist
 
 
 
-def quickSubs(childPlots = None, layoutfig = None, nrows = None, ncols = None):
+def quickSubs(childPlots = None, 
+              layoutfig = None, nrows = None, ncols = None,
+              output = "png"):
     '''
     Takes an arbitrary number of Plotly figure objects, and plots them together on a single Plotly figure. 
     Each figure object supplied is turned into a subplot in the Figure. 
@@ -362,4 +380,18 @@ def quickSubs(childPlots = None, layoutfig = None, nrows = None, ncols = None):
     # print(newfigdict)
     newfig = pio.from_json(newfigjson)
     
+    process_output(newfig, output)
+    
     return newfig
+
+# quickbar
+
+# quick box
+
+# quick violin
+
+# quick sankey
+
+# quick pie
+
+# quick 
