@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "codechembook"
-version = "0.1.0"
+version = "0.1.1"
 description = "Companion package to 'Coding for Chemists' containing helpful functions for common tasks."
 readme = "README.md"
 license = { file = "LICENSE" }
