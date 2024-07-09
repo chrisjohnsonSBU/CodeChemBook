@@ -8,7 +8,7 @@
 import numpy as np
 from plotly.subplots import make_subplots
 import plotly.io as pio
-import quickplots
+from . import quickplots
 
 def plotFit(fit, 
             resample = 10, 
@@ -123,7 +123,7 @@ def plotFit(fit,
     # If we are doing residuals, plot the residual
     if residual:
         fig.add_scatter(x = xdata, 
-                        y = fit.residual, 
+                        y = -1*fit.residual, # we need to multiply this by -1, to get the 'expected' behavior of data - fit. 
                         mode = 'markers+lines', 
                         name = 'Residual', 
                         line = {'color': 'black', 'width':1},
