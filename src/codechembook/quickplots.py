@@ -23,7 +23,7 @@ def process_output(plot, output):
         print("Use 'None' to show nothing and return the figure object.")
     
     
-def quickScatter(x = None, y = None, xlabel = None, ylabel = None, name = None, template = "simple_white", mode = None, output = "png"):
+def quickScatter(x = None, y = None, xlabel = '', ylabel = '', name = None, template = "simple_white", mode = None, output = "png"):
     """
     Quickly plot one xy trace in plotly.
 
@@ -223,7 +223,7 @@ def quickBin(x, limits = None, nbins = None, width = None):
 
 
 def quickHist(x, 
-              xlabel = None, ylabel = None, 
+              xlabel = '', ylabel = '', 
               limits = None, nbins = None, width = None, 
               mode = "counts", buffer = 0.05, 
               template = "simple_white",

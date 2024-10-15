@@ -167,6 +167,14 @@ def plotFit(fit,
 
     # Update the layout
     fig.update_layout(template = template, showlegend = False)
+    
+    # Flag the user if the fit did not finish successfully
+    fig_full = fig.full_figure_for_development()
+    if fit.ier not in (1, 2, 3, 4):
+        print(fit.result.lmdif_message)
+        fig.add_annotation(x = (fig_full.layout.xaxis.range[1] - fig_full.layout.xaxis.range[0])/2,
+                           y = (fig_full.layout.yaxis.range[1] - fig_full.layout.yaxis.range[0])/2,
+                           text = 'Fit not converged.\nCheck command line for info.')
 
     # Plot the figure to the specified output
     quickplots.process_output(fig, output) # check to see how we should be outputting this plot
