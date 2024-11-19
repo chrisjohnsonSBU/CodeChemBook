@@ -11,5 +11,5 @@ from . import chem
 from . import greek
 from . import math
 from . import script
-from . import sup
 from . import typography
+from . import TypsettingHTML # this one is functions

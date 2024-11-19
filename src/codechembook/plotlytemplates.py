@@ -1,7 +1,17 @@
 # -*- coding: utf-8 -*-
 import plotly.graph_objects as go
 
-# if you dont' specify anything you basically get simple_white
+
+
+
+
+
+
+# restructure this as a data class
+# be able to accept a dictionary key-like thing for this, for the ones that exist right now
+# make classes for each publisher/family (acs, rsc, springer, elsevier, mdpi, etc AND by use case: slides, powerpoint, keynote, etc) and then have subclasses for specifics (JACS, ChemSci, dark, light, etc. )
+
+# if you don't specify anything you basically get simple_white
 def chemPlot(name, ratio = None, font = None, colors = None, legend = "top-right"): # default ratio is US paper
     '''
     Gets plotly layouts that produce figures that are formatted specific journals
@@ -86,7 +96,7 @@ def chemPlot(name, ratio = None, font = None, colors = None, legend = "top-right
                 page_width = 6.25
                 aratio = 5.75/6.25
             
-    #if "Coding" in name:
+    #if "CodeChemBook" in name:
     
     # check to see if we need to use a user supplied ratio
     if ratio != None:
@@ -185,3 +195,25 @@ def chemPlot(name, ratio = None, font = None, colors = None, legend = "top-right
             )
  
     return go.layout.Template(chemTemplate)
+
+
+
+'''
+Below we have some dataclass approach....
+Wnat to use classes and subclasses....
+
+use: is this for publication or presentation?
+
+if it is publication, can use publisher (ACS, RSC, NSF, etc) -> journal (JACS, ChemSci, grant, etc)
+if it is a presentation, can use software (powerpoint, keynote, slides, etc) and then theme? (dark, light, etc.)
+'''
+
+from dataclasses import dataclass, field
+
+@dataclass
+class template:
+    JACS: go.layout.Template = field(default_factory=lambda: chemPlot("JACS"))
+    ChemSci: go.layout.Template = field(default_factory=lambda: chemPlot("ChemSci"))
+    
+
+quickTemplate = template()

@@ -48,6 +48,58 @@ def quickPlotCSV(file, cols = None, skip_header = 1, plotType = "scatter", xcol 
     return fig
 
 
+
+from symbols import math, typography
+def scientificNotation(number, precision = None, exponent = None):
+    
+    oldNumberString = f'{number:e}' # use the "e" to ensure it is always formatted with an e
+    oldCoefficient, oldExponent = oldNumberString.split('e') # get the coefficient and exponent from the old number string
+    oldCoefficient = float(oldCoefficient) # make sure we have a float for the coefficient
+    oldExponent = int(oldExponent) # make sure we have a string for the exponent
+    print(oldExponent)
+    
+    if exponent is not None:# this means there is a desired exponent... such as 10^6
+        sciExponent = exponent # set the scientific exponent to the desired exponent
+        sciCoefficient = oldCoefficient * 10**(oldExponent - exponent) # make sure we scale the coefficient by the different in the exponents.
+    else:
+        sciExponent = oldExponent
+        sciCoefficient = oldCoefficient
+    
+    if precision is not None: # his means we have a level of precision we want to report to
+        sciCoefficient = np.round(sciCoefficient, precision)
+    
+    supString = ''
+    for glyph in str(sciExponent): # go through glyph by glyph and assign the correct superscript
+        if glyph == '0':
+            supString = supString + typography.sup_0
+        elif glyph == '1':
+            supString = supString + typography.sup_1
+        elif glyph == '2':
+            supString = supString + typography.sup_2
+        elif glyph == '3':
+            supString = supString + typography.sup_3
+        elif glyph == '4':
+            supString = supString + typography.sup_4
+        elif glyph == '5':
+            supString = supString + typography.sup_5
+        elif glyph == '6':
+            supString = supString + typography.sup_6
+        elif glyph == '7':
+            supString = supString + typography.sup_7
+        elif glyph == '8':
+            supString = supString + typography.sup_8
+        elif glyph == '9':
+            supString = supString + typography.sup_9
+        elif glyph == '-':
+            supString = supString + typography.sup_minus
+        else:
+            pass
+        
+    formattedScientificNotation = f'{sciCoefficient}{math.times}10{supString}'
+    
+    return formattedScientificNotation
+
+
 toPlot = "/Users/benjaminlear/Documents/GitHub/Coding-for-Chemists/Data/OnePlot/0.999.csv"
 
 quickPlotCSV(toPlot)
