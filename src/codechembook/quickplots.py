@@ -494,11 +494,15 @@ def plotFit(fit,
     smoothy = fit.eval(**kwargs)
     
     # If we are plotting the residual, then we need two subplots
-    if residual:
+    if residual: # will work as long as this is not False, 0, empty list, etc
+        row_heights = [0.8, 0.2] # this is the default
+        if "scaled" in residual:
+            row_heights = [np.max(ydata) - np.min(ydata) , np.max(fit.residual) - np.min(fit.residual)]
+
         fig = make_subplots(rows = 2, 
                             cols = 1, 
                             shared_xaxes = True, 
-                            row_heights = [0.8, 0.2],
+                            row_heights = row_heights,
                             vertical_spacing = 0.05)
     else:
         fig = make_subplots()
@@ -593,8 +597,8 @@ def plotFit(fit,
         print(fit.result.lmdif_message)
 
         # find min max of x and y and average instead
-        fig.add_annotation(x = (fig_full.layout.xaxis.range[1] - fig_full.layout.xaxis.range[0])/2,
-                           y = (fig_full.layout.yaxis.range[1] - fig_full.layout.yaxis.range[0])/2,
+        fig.add_annotation(x = (np.max(xdata) - np.min(xdata))/2,
+                           y = (np.max(ydata) - np.min(ydata))/2,
                            text = 'Fit not converged.\nCheck command line for info.')
 
     # Plot the figure to the specified output
