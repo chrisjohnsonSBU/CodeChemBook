@@ -1,6 +1,6 @@
 # some tools for handlign opening and plotting....
 import numpy as np
-from codechembook import quickplots as qp
+from codechembook import quickPlots as qp
 
 
 def quickOpenCSV(file, cols = None, delimiter = ",", skip_header = 1):

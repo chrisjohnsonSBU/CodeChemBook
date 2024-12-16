@@ -3,9 +3,9 @@
 __version__ = "0.1.0"
 
 #from CompChemBook import *
-from .quickplots import *
-from .plotlytemplates import *
+from .quickPlots import *
+#from .quickTools import *
+from .plotlyTemplates import *
 #from .chemtools import *
 from .numericaltools import *
-from .fittools import *
 from .symbols import *
