@@ -206,22 +206,30 @@ def quickSelectFolder(title="Select folder", initialdir="."):
     - Path: A Path object representing the selected folder, or None if no folder was selected.
     """
     from PyQt5.QtWidgets import QApplication, QFileDialog
+    from PyQt5.QtCore import Qt
     from pathlib import Path
 
-    # Ensure initialdir is a string (if passed as a Path object)
     if isinstance(initialdir, Path):
         initialdir = str(initialdir)
 
-    # Ensure QApplication instance exists
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
 
-    # Open the folder selection dialog
-    folderpath = QFileDialog.getExistingDirectory(None, title, initialdir)
+    # Open the folder selection dialog with a "stay on top" flag
+    dialog = QFileDialog()
+    dialog.setWindowTitle(title)
+    dialog.setFileMode(QFileDialog.DirectoryOnly)
+    dialog.setOptions(QFileDialog.ShowDirsOnly)
+    dialog.setWindowFlags(dialog.windowFlags() | Qt.WindowStaysOnTopHint)
 
-    # Return the selected folder as a Path object, or None if no folder was selected
-    return Path(folderpath) if folderpath else None
+    # Set the initial directory and open the dialog
+    dialog.setDirectory(initialdir)
+    if dialog.exec_():
+        folderpath = dialog.selectedFiles()[0]
+        return Path(folderpath)
+    else:
+        return None
 
 def quickSaveFilename(title="Choose or create a filename to save", initialdir='.', filetypes='All files*.*'):
     """
