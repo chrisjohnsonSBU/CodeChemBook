@@ -461,18 +461,6 @@ def plotFit(fit,
     Returns:
         fig (plotly figure object): the figure object created
     """
-    # If the user supplied an x axis label, add it
-    if type(xlabel) == str:
-        fig.update_xaxes(title = xlabel, row = 2 if residual else 1)
-    elif xlabel != None: # we can default to the name in the model
-        xlabel = fit.model.independent_vars[0]
-        
-    # If the user supplied a y axis label, add it
-    if type(ylabel) == str:
-        fig.update_yaxes(title = ylabel, row = 1)
-    elif ylabel != None:
-        print('Please enter a string for the y label.')
-
     
     # Just making some variables for convenience
     # First figure out what the independent variable name(s) is(are)
@@ -496,7 +484,7 @@ def plotFit(fit,
     # If we are plotting the residual, then we need two subplots
     if residual: # will work as long as this is not False, 0, empty list, etc
         row_heights = [0.8, 0.2] # this is the default
-        if "scaled" in residual:
+        if residual == 'scaled':
             row_heights = [np.max(ydata) - np.min(ydata) , np.max(fit.residual) - np.min(fit.residual)]
 
         fig = make_subplots(rows = 2, 
@@ -601,8 +589,18 @@ def plotFit(fit,
                            y = (np.max(ydata) - np.min(ydata))/2,
                            text = 'Fit not converged.\nCheck command line for info.')
 
+    # If the user supplied an x axis label, add it
+    if xlabel is None: # we can default to the name in the model
+        xlabel = fit.model.independent_vars[0]
+    fig.update_xaxes(title = xlabel, row = 2 if residual else 1)    
+
+    # If the user supplied a y axis label, add it
+    if ylabel is None:
+        print('Please enter a string for the y label.')
+    fig.update_yaxes(title = ylabel, row = 1)
+
     # Plot the figure to the specified output
-    quickplots.process_output(fig, output) # check to see how we should be outputting this plot
+    process_output(fig, output) # check to see how we should be outputting this plot
 
     return fig
 

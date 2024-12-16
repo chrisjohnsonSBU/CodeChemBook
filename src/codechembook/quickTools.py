@@ -24,6 +24,21 @@ def quickOpenCSV(file, cols = None, delimiter = ",", skip_header = 1):
     return read_columns
 
 def quickSaveCSV(file, data, format = None, delimiter = ', ', header = ''):
+    """
+    Saves a CSV file of 1D or 2D data.
+    
+    Parameters:
+    - file (str or Path):     The path to save the file.
+    - data (list or ndarray): The data to save.  Can be 1D or 2D list or ndarrays, or list of 1D ndarrays
+    
+    Keywords:
+    - format (str or list):   A format string using either pre-Python2.6 format ('%5.3f') for f-string
+                              format ('5.3f').  The colon is omitted.  Default is '.14f'.  If columns need 
+                              different formatting, a list of f-string style format strings for each column 
+                              can be provided.
+    - delimiter (str):        The delimiter character: ', ' (comma, default), ' ' (space), '\t' (tab), or anything else
+    - header (str):           Column header text.  Default is no header
+    """
     # Check which type of data we have received and make a new numpy array holding it
     if isinstance(data, list) or isinstance(data, tuple):
         # If we got a list, then we need to turn rows into columns to make a 2D array
@@ -39,18 +54,21 @@ def quickSaveCSV(file, data, format = None, delimiter = ', ', header = ''):
             # Easy, we just copy it over
             prep_data = data
 
-        # elif len(data.shape) == 1:
-        #     prep_data = data
         else:
             print('Incompatible numpy array shape for this function.')
+
     elif isinstance(data, (int, float, complex, bool, str)):
+        # For whatever reason, the user wants to write just one value
         prep_data = np.array([data])
+
     else:
-        print('This type is not supported by this function.')
+        print('This data type is not supported by this function.')
         return
 
     if format is None:
-        new_format = '%.14e'
+        # No format statement given, let's just print 20 characters total
+        new_format = '%.14e' # good for anything but the most precise measurements made by humans
+
     elif isinstance(format, str):
         if format[0] == '%' or format[1] == '%':
             # We have an old-school python format string, use it as is
@@ -58,26 +76,44 @@ def quickSaveCSV(file, data, format = None, delimiter = ', ', header = ''):
 
         else:
             # Assume we have an f-strings type format string
+            # Quick way to format large ndarrays: define format function, vectorize, apply
             def temp(x):
                 return f'{x:{format}}'
             fast_format = np.vectorize(temp)
             prep_data = fast_format(prep_data)
+
+            # Now we have a formatted string, so we just want the format statement to keep it the same
             new_format = '%s'
+
     elif isinstance(format, list):
+        # We want different columns to be different formats.  First make sure formats and columns match
         if len(format) == prep_data.shape[1]:
+            # Empty list of columns of formatted data
             string_data = []
             print(f'Formatting {prep_data.shape[1]} columns with {len(format)} format statements')
+            
+            # Loop over columns and format them one by one with the appropriate format string
             for i, f in enumerate(format):
+                # See previous elif for explanation
                 def temp(x):
                     return f'{x:{f}}'
                 fast_format = np.vectorize(temp)
+
+                # Add the new formatted column to the data list
                 string_data.append(fast_format(prep_data[:,i]))
+
+            # Make a ndarray with the formatted columns
             prep_data = np.column_stack(string_data)
+
+            # Now we have a formatted string, so we just want the format statement to keep it the same
             new_format = '%s'
+
         else:
+            # Number of data columns and format strings are not the same, fail with a useful message
             print(f'Failed: Received {prep_data.shape[1]} columns but {len(format)} format statements.\nNot writing any file.')
             return
 
+    # Write the file
     np.savetxt(file, prep_data, delimiter = delimiter, fmt = new_format, header = header, comments = '')
 
 def quickPlotCSV(file, cols = None, skip_header = 1, plotType = "scatter", xcol = 0):
@@ -101,7 +137,7 @@ def quickPlotCSV(file, cols = None, skip_header = 1, plotType = "scatter", xcol 
 
     return fig
 
-def quickOpenFilenames(title="Select files to open", initialdir='.', filetypes='All files, *.*', sorted = True):
+def quickOpenFilenames(title="Select files to open", initialdir='.', filetypes='All files, *.*', sort = True):
     """
     Opens a file dialog to select multiple files, returning a sorted list of Path objects.
     
@@ -116,16 +152,22 @@ def quickOpenFilenames(title="Select files to open", initialdir='.', filetypes='
     - List[Path]: A sorted list of selected file paths as Path objects.
     """
     from PyQt5.QtWidgets import QApplication, QFileDialog
+    from pathlib import Path
+
+
+    # Ensure initialdir is a string (if passed as a Path object)
+    if isinstance(initialdir, Path):
+        initialdir = str(initialdir)
 
     app = QApplication([])  # Create a Qt application
     filepaths, _ = QFileDialog.getOpenFileNames(None, title, initialdir, filetypes)
-
-    if sorted:
+    
+    if sort:
         filepaths = sorted(filepaths)
 
-    return filepaths
+    return [Path(filepath) for filepath in filepaths]
 
-def quickOpenFilename(title="Select files to open", initialdir='.', filetypes='All files, *.*'):
+def quickOpenFilename(title="Select file to open", initialdir='.', filetypes='All files, *.*'):
     """
     Opens a file dialog to select multiple files, returning a sorted list of Path objects.
     
@@ -139,7 +181,47 @@ def quickOpenFilename(title="Select files to open", initialdir='.', filetypes='A
     Returns:
     - Path: A Path object.
     """
-    return quickOpenFilenames(title = title, initialdir = initialdir, filetypes = filetypes)[0]
+    from PyQt5.QtWidgets import QApplication, QFileDialog
+    from pathlib import Path
+
+    # Ensure initialdir is a string (if passed as a Path object)
+    if isinstance(initialdir, Path):
+        initialdir = str(initialdir)
+        
+    app = QApplication([])  # Create a Qt application
+    filepath, _ = QFileDialog.getOpenFileName(None, title, initialdir, filetypes)
+    
+    return Path(filepath)
+
+def quickSelectFolder(title="Select folder", initialdir="."):
+    """
+    Opens a folder selection dialog, returning the selected folder as a Path object.
+
+    Parameters:
+    - title (str): The title of the folder selection dialog window. Defaults to "Select folder".
+    - initialdir (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
+                                Accepts both Path objects and strings.
+
+    Returns:
+    - Path: A Path object representing the selected folder, or None if no folder was selected.
+    """
+    from PyQt5.QtWidgets import QApplication, QFileDialog
+    from pathlib import Path
+
+    # Ensure initialdir is a string (if passed as a Path object)
+    if isinstance(initialdir, Path):
+        initialdir = str(initialdir)
+
+    # Ensure QApplication instance exists
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])
+
+    # Open the folder selection dialog
+    folderpath = QFileDialog.getExistingDirectory(None, title, initialdir)
+
+    # Return the selected folder as a Path object, or None if no folder was selected
+    return Path(folderpath) if folderpath else None
 
 def quickSaveFilename(title="Choose or create a filename to save", initialdir='.', filetypes='All files*.*'):
     """
@@ -156,11 +238,16 @@ def quickSaveFilename(title="Choose or create a filename to save", initialdir='.
     - Path: the path to the filename that is to be saved.
     """
     from PyQt5.QtWidgets import QApplication, QFileDialog
+    from pathlib import Path
 
+    # Ensure initialdir is a string (if passed as a Path object)
+    if isinstance(initialdir, Path):
+        initialdir = str(initialdir)
+        
     app = QApplication([])  # Create a Qt application
     filepath, _ = QFileDialog.getSaveFileName(None, title, initialdir, filetypes)
 
-    return filepath
+    return Path(filepath)
 
 def scientificNotation(number, precision = None, exponent = None):
     from symbols import math, typography
