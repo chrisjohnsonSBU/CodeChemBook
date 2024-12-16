@@ -1,6 +1,7 @@
 # some tools for handlign opening and plotting....
 import numpy as np
 from codechembook import quickplots as qp
+from symbols import math, typography
 
 
 '''
@@ -86,9 +87,26 @@ def quickGetFileNames(title="Select files to open", initialdir='.', filetypes=((
     from tkinter import filedialog
     from pathlib import Path
 
-<<<<<<< Updated upstream
+    # Create a root window but keep it minimized and on top
+    root = tk.Tk()
+    root.lift()  # Ensure it's on top
+    root.attributes('-topmost', True)  # Force window to be topmost
+    root.withdraw()  # Hide the root window from view
 
-from symbols import math, typography
+    # Ensure window becomes visible and waits before proceeding
+    root.deiconify()  # Bring the window back to life but hidden
+    root.wait_visibility()  # Wait for the window to become visible
+    root.attributes('-topmost', True)  # Force window to stay on top
+
+    # Open the file dialog with the specified parameters
+    filenames = filedialog.askopenfilenames(title=title, initialdir=initialdir, filetypes=[filetypes])
+
+    # Destroy the root window after file selection
+    root.destroy()
+
+    # Convert the filenames to Path objects and return the sorted list
+    return sorted([Path(f) for f in filenames])
+
 def scientificNotation(number, precision = None, exponent = None):
     
     oldNumberString = f'{number:e}' # use the "e" to ensure it is always formatted with an e
@@ -138,30 +156,3 @@ def scientificNotation(number, precision = None, exponent = None):
     
     return formattedScientificNotation
 
-
-toPlot = "/Users/benjaminlear/Documents/GitHub/Coding-for-Chemists/Data/OnePlot/0.999.csv"
-=======
-    # Convert initialdir to a string if it's a Path object
-    if isinstance(initialdir, Path):
-        initialdir = str(initialdir)
->>>>>>> Stashed changes
-
-    # Create a root window but keep it minimized and on top
-    root = tk.Tk()
-    root.lift()  # Ensure it's on top
-    root.attributes('-topmost', True)  # Force window to be topmost
-    root.withdraw()  # Hide the root window from view
-
-    # Ensure window becomes visible and waits before proceeding
-    root.deiconify()  # Bring the window back to life but hidden
-    root.wait_visibility()  # Wait for the window to become visible
-    root.attributes('-topmost', True)  # Force window to stay on top
-
-    # Open the file dialog with the specified parameters
-    filenames = filedialog.askopenfilenames(title=title, initialdir=initialdir, filetypes=[filetypes])
-
-    # Destroy the root window after file selection
-    root.destroy()
-
-    # Convert the filenames to Path objects and return the sorted list
-    return sorted([Path(f) for f in filenames])
