@@ -6,7 +6,7 @@ Created on Tue Oct 15 09:15:10 2024
 @author: benjaminlear
 """
 
-plus_minus: str = '\u00B1'  # ± plus/minus
+plusminus: str = '\u00B1'  # ± plus/minus
 cdot: str = '\u22C5'  # ⋅ dot product operator
 mdot: str = '\u00B7'  # · middle dot
 identical_to: str = '\u2261'  # ≡ identical to
