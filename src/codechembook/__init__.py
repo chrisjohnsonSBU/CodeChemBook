@@ -8,3 +8,4 @@ from .plotlytemplates import *
 #from .chemtools import *
 from .numericaltools import *
 from .fittools import *
+from .symbols import *

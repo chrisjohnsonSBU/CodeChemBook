@@ -115,7 +115,7 @@ Now, update the chemplate_dicts to have all the chemplates we want
 
 chemplate_dicts = dict(
     JACS = JACS,
-    ccb_color = ccb_color
+    ccb_color = ccb_color,
     simple_white = copy.deepcopy(pio.templates["simple_white"]),
     )
 
