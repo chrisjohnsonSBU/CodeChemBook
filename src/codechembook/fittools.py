@@ -44,6 +44,12 @@ def plotFit(fit,
     Returns:
         fig (plotly figure object): the figure object created
     """
+    # If the user supplied a y axis label, add it
+    if type(ylabel) == str:
+        fig.update_yaxes(title = ylabel, row = 1)
+    elif ylabel != None:
+        print('Please enter a string for the y label.')
+
     
     # Just making some variables for convenience
     # First figure out what the independent variable name(s) is(are)
@@ -159,12 +165,7 @@ def plotFit(fit,
     elif xlabel != None:
         print('Please enter a string for the x label.')
 
-    # If the user supplied a y axis label, add it
-    if type(ylabel) == str:
-        fig.update_yaxes(title = ylabel, row = 1)
-    elif ylabel != None:
-        print('Please enter a string for the y label.')
-
+    
     # Update the layout
     fig.update_layout(template = template, showlegend = False)
     
@@ -172,6 +173,8 @@ def plotFit(fit,
     fig_full = fig.full_figure_for_development()
     if fit.ier not in (1, 2, 3, 4):
         print(fit.result.lmdif_message)
+
+        # find min max of x and y and average instead
         fig.add_annotation(x = (fig_full.layout.xaxis.range[1] - fig_full.layout.xaxis.range[0])/2,
                            y = (fig_full.layout.yaxis.range[1] - fig_full.layout.yaxis.range[0])/2,
                            text = 'Fit not converged.\nCheck command line for info.')

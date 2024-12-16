@@ -5,10 +5,22 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.io as pio
 import json
+import inspect
+
 
 #
-# 1d plots
+# supporting utilities
 #
+
+def _get_name_two_calls_ago(x,):
+    n = None
+    callers_locals = inspect.currentframe().f_back.f_back.f_locals
+    for name, value in callers_locals.items():
+        if value is x:
+            n =  f"{name}" 
+    if n is None: # this is likely only to happen when the variable was a literal (and so anonymous)
+        n = "untitled"
+    return n
 
 def process_output(plot, output):
     # Plot the figure to the specified output
@@ -21,77 +33,6 @@ def process_output(plot, output):
     else:
         print("Enter 'png' to plot in Spyder or 'browser' for the browser.")
         print("Use 'None' to show nothing and return the figure object.")
-    
-    
-def quickScatter(x = None, y = None, xlabel = '', ylabel = '', name = None, template = "simple_white", mode = None, output = "png"):
-    """
-    Quickly plot one xy trace in plotly.
-
-    Optional Args:
-        x (ndarray or list of ndarray): the x coordinates to plot
-        y (ndarray or list of ndarray): the y coordinates to plot
-        xlabel (string):                x axis title
-        ylabel (string):                y axis title
-        mode (string):                  plot using 'lines'(default) or 'markers'
-        template (string):              which plotly template to use (default simple_white)
-        show (string):                  output to Spyder plot window ('png', 'svg')
-                                           or browser ('browser')
-                                           or the 'normal' show behavior ('default')
-                                           or 'None' for no output
-                    
-    Returns:
-        qplot (plotly figure object): the figure object created
-    """
-    if type(x[0]) != np.ndarray and type(x[0]) != list: # then x is not an array or list
-        xplot = [x]
-    else:
-        try: 
-            xplot = x # if already an array of arrays, then just keep it
-        except:
-            raise "You need to supply a list or array of floats or ints"
-    if type(y[0]) != np.ndarray and type(y[0]) != list: # then y is not an array or list
-        yplot = [y]
-    else:
-        try: 
-            yplot = y # if already an array of arrays, then just keep it
-        except:
-            raise "You need to supply a list or array of floats or ints"
-    
-    #next, let us ensure we can iterate through x and y together
-    if len(xplot) == 1:
-        xplot = [xplot[0]]*len(yplot)
-    elif len(xplot) != len(yplot):
-        raise "your x values should be a list of length equal to y values, or a list of 1"
-    
-    # start the plotting
-    qplot = make_subplots()
-    if name is None:
-        name = ['' for x in xplot]
-    for xi,yi,ni in zip(xplot, yplot, name):
-        if len(xi) != len(yi):
-            raise "you do not have the same number of x and y points!"
-        if mode is None:
-            points = go.Scatter(x=xi, y = yi, name = ni)
-        elif "lines" in mode or "markers" in mode:
-            points = go.Scatter(x=xi, y = yi, mode = mode, name = ni)
-        else:
-            raise "please enter either 'lines', 'markers', 'lines+markers', or None for mode"
-        qplot.add_trace(points)
-    
-    qplot.update_xaxes(title = str(xlabel)) # cast as string to handle numeric values if passed
-    qplot.update_yaxes(title = str(ylabel))
-    
-    # confirm that the specified template is one that we have
-    if template not in pio.templates.keys():
-        print('Invalid template specified, defaulting to simple_white.')
-        template = 'simple_white'
-    qplot.update_layout(template = template)
-    
-    process_output(qplot, output) # check to see how we should be outputting this plot
-    
-    return qplot
-
-
 
 def quickGrid(x = None, labels = None, template = "simple_white", output = "png"):
     '''
@@ -221,73 +162,6 @@ def quickBin(x, limits = None, nbins = None, width = None):
     
     return [bin_centers, bin_counts]
 
-
-def quickHist(x, 
-              xlabel = '', ylabel = '', 
-              limits = None, nbins = None, width = None, 
-              mode = "counts", buffer = 0.05, 
-              template = "simple_white",
-              output = "png"):
-    """
-    
-    
-    Parameters
-    ----------
-    x : list or ndarray
-        The collection of numbers to be displayed as a histogram.
-    xlabel : string, optional
-        The title for the x-axis. The default is None.
-    ylabel : string, optional
-        The title for the y-axis. The default is None.
-    limits : int or float, optional
-        The upper and lower limits of the binning. The default is None, which means it will be determined by the limits of the data.
-    nbins : int, optional
-        Number of bins that you wish. If specified, then the range of data is divided by this number to find the bin widths
-    width : int or float, optional
-        The width of the bins desired.  If specified, then they are applied, starting at the lowest part of the range, upward. The default is None.
-    mode : string, optional
-        This specifies if counts or frequency is desired on the y-axis. The default is "counts".
-    buffer : int or float, optional
-        The fraction of the total range that is added to the left and right side of the x-axis. The default is 0.05.
-    template : TYPE, optional
-        Any valid name for a Plotly template. The default is "simple_white".
-    output : string or Nonetype, optional
-        Any valid key for showing a plot in plotly. Common options include "png", "svg", or "browser"
-
-    Returns
-    -------
-    A plotly figure object.  In this object, the histogram is rendered as a bar chart.
-
-    """
-    # we will want the iqr for calculating the buffer space on the plot
-    q75, q25 = np.percentile(x, [75,25]) # find the places for the inner quartile
-    iqr = q75 - q25 # calculate the inner quartile range
-    
-    bin_centers, bin_counts = quickBin(x, limits = limits, nbins = nbins, width = width)
-    
-    # now we can plot a bar chart that looks like a histogram...
-    hist = make_subplots()
-    if mode == "counts":
-        bars = go.Bar(x = bin_centers, y = bin_counts)
-        hist.update_yaxes(title = "counts")
-    if mode == "freq": # we are doing frequency
-        bars = go.Bar(x = bin_centers, y = bin_counts/np.sum(x))
-        hist.update_yaxes(title = "frequency")
-    
-    hist.add_trace(bars)
-    
-    hist.update_traces(marker = dict(line = dict(width = 1, color = "black")))
-    
-    hist.update_xaxes(title = xlabel, range = [min(bin_centers) - buffer*iqr, max(bin_centers) + buffer*iqr])
-    
-    hist.update_layout(bargap = 0, template = template)
-    
-    process_output(hist, output)
-    
-    return hist
-
-
-
 def quickSubs(childPlots = None, 
               layoutfig = None, nrows = None, ncols = None,
               output = "png"):
@@ -383,6 +257,352 @@ def quickSubs(childPlots = None,
     process_output(newfig, output)
     
     return newfig
+  
+#
+# 2d plots
+#
+    
+def quickScatter(x = None, y = None, xlabel = None, ylabel = None, name = None, template = "simple_white", mode = None, output = "png"):
+    """
+    Quickly plot one xy trace in plotly.
+
+    Optional Args:
+        x (ndarray or list of ndarray): the x coordinates to plot
+        y (ndarray or list of ndarray): the y coordinates to plot
+        xlabel (string):                x axis title
+        ylabel (string):                y axis title
+        mode (string):                  plot using 'lines'(default) or 'markers'
+        template (string):              which plotly template to use (default simple_white)
+        show (string):                  output to Spyder plot window ('png', 'svg')
+                                           or browser ('browser')
+                                           or the 'normal' show behavior ('default')
+                                           or 'None' for no output
+                    
+    Returns:
+        qplot (plotly figure object): the figure object created
+    """
+    # if the user did not supply axis names, then we can just use the variable names
+    if xlabel is None:
+        xlabel = _get_name_two_calls_ago(x)
+    if ylabel is None:
+        ylabel = _get_name_two_calls_ago(y)
+
+
+    if type(x[0]) != np.ndarray and type(x[0]) != list: # then x is not an array or list
+        xplot = [x]
+    else:
+        try: 
+            xplot = x # if already an array of arrays, then just keep it
+        except:
+            raise "You need to supply a list or array of floats or ints"
+    if type(y[0]) != np.ndarray and type(y[0]) != list: # then y is not an array or list
+        yplot = [y]
+    else:
+        try: 
+            yplot = y # if already an array of arrays, then just keep it
+        except:
+            raise "You need to supply a list or array of floats or ints"
+    
+    #next, let us ensure we can iterate through x and y together
+    if len(xplot) == 1:
+        xplot = [xplot[0]]*len(yplot)
+    elif len(xplot) != len(yplot):
+        raise "your x values should be a list of length equal to y values, or a list of 1"
+    
+    # start the plotting
+    qplot = make_subplots()
+    if name is None:
+        name = ['' for x in xplot]
+    for xi,yi,ni in zip(xplot, yplot, name):
+        if len(xi) != len(yi):
+            raise "you do not have the same number of x and y points!"
+        if mode is None:
+            points = go.Scatter(x=xi, y = yi, name = ni)
+        elif "lines" in mode or "markers" in mode:
+            points = go.Scatter(x=xi, y = yi, mode = mode, name = ni)
+        else:
+            raise "please enter either 'lines', 'markers', 'lines+markers', or None for mode"
+        qplot.add_trace(points)
+
+    qplot.update_xaxes(title = str(xlabel)) # cast as string to handle numeric values if passed
+    qplot.update_yaxes(title = str(ylabel))
+    
+    # confirm that the specified template is one that we have
+    if template not in pio.templates.keys():
+        print('Invalid template specified, defaulting to simple_white.')
+        template = 'simple_white'
+    qplot.update_layout(template = template)
+    
+    process_output(qplot, output) # check to see how we should be outputting this plot
+    
+    return qplot
+
+def quickHist(x, 
+              xlabel = None, ylabel = None, 
+              limits = None, nbins = None, width = None, 
+              mode = "counts",
+              orientation = "vertical", # can also be "horizontal"
+              template = "simple_white",
+              output = "png"):
+    """
+    
+    
+    Parameters
+    ----------
+    x : list or ndarray
+        The collection of numbers to be displayed as a histogram.
+    xlabel : string, optional
+        The title for the x-axis. The default is None.
+    ylabel : string, optional
+        The title for the y-axis. The default is None.
+    limits : int or float, optional
+        The upper and lower limits of the binning. The default is None, which means it will be determined by the limits of the data.
+    nbins : int, optional
+        Number of bins that you wish. If specified, then the range of data is divided by this number to find the bin widths
+    width : int or float, optional
+        The width of the bins desired.  If specified, then they are applied, starting at the lowest part of the range, upward. The default is None.
+    mode : string, optional
+        This specifies if counts or frequency is desired on the y-axis. The default is "counts".
+    buffer : int or float, optional
+        The fraction of the total range that is added to the left and right side of the x-axis. The default is 0.05.
+    template : TYPE, optional
+        Any valid name for a Plotly template. The default is "simple_white".
+    output : string or Nonetype, optional
+        Any valid key for showing a plot in plotly. Common options include "png", "svg", or "browser"
+
+    Returns
+    -------
+    A plotly figure object.  In this object, the histogram is rendered as a bar chart.
+
+    """
+    # if the user did not supply axis names, then we can just use the variable names
+    if xlabel is None:
+        xlabel = _get_name_two_calls_ago(x)
+
+
+    # we will want the iqr for calculating the buffer space on the plot
+    q75, q25 = np.percentile(x, [75,25]) # find the places for the inner quartile
+    iqr = q75 - q25 # calculate the inner quartile range
+    
+    #default to plotting counts, I guess
+    bar_centers, bar_lengths = quickBin(x, limits = limits, nbins = nbins, width = width)
+    
+    if "counts" in mode:
+        # for the ylabel, we can use the mode, if no label was yet supplied. 
+        if ylabel is None:
+            ylabel = "counts"
+
+    # adjust if we need to change the counts to frequency
+    if "freq" in mode: # then we are doing frequency
+        bar_lengths = bar_lengths / np.sum(x)
+        
+        # for the ylabel, we can use the mode, if no label was yet supplied. 
+        if ylabel is None:
+            ylabel = "frequency"
+
+    # work out a buffer for the bars on either side
+    # calculate the width of bars
+    bar_separation = bar_centers[1] - bar_centers[0] # quickBin should always have adjacent bars
+    # calculate a buffer based in iqr
+    iqr_buffer = 0.05*iqr
+    # take whatever is larger
+    buffer = max[bar_separation, iqr_buffer]
+
+    # now we can plot a bar chart that looks like a histogram...
+    hist = make_subplots()
+    
+    if "v" in orientation:
+        hist.add_bar(x = bar_centers, y = bar_lengths)
+    elif "h" in orientation:
+        hist.add_bar(x = bar_lengths, y = bar_centers)
+
+    
+    hist.update_traces(marker = dict(line = dict(width = 1, color = "black")))
+    
+    hist.update_xaxes(title = xlabel, range = [min(bar_centers) - buffer, max(bar_centers) + buffer])
+    hist.update_yaxes(title = ylabel, range = [0, max[bar_lengths]*0.02])
+    hist.update_layout(bargap = 0, template = template)
+    
+    process_output(hist, output)
+    
+    return hist
+
+def plotFit(fit, 
+            resample = 10, 
+            residual = False, 
+            components = False, 
+            confidence = 0, 
+            xlabel = None, 
+            ylabel = None, 
+            template = 'simple_white',
+            output = 'png',
+            colors = 'greys'):
+    """
+    Plot the result of a 1d fit using lmfit
+    
+    Required Args:
+        fit (lmfit result object): the result of a fit using lmfit
+        
+    Optional Args:
+        resample (int):    increase the density of points on the x axis by N 
+                           times for a smoother model fit curve (default: 10)
+        residual (bool):   plot the residual (default: False)
+        components (bool): plot the individual components of the model (default: False)
+        confidence (int):  plot the confidence interval of the fit (N-sigma) (default: 0)
+                           where N = 0 (default), 1, 2, etc. (default: 0)
+        xlabel (string):   x axis title (default: None)
+        ylabel (string):   y axis title (default: None)
+        template (string): which plotly template to use (default: 'simple_white')
+        colors (string):   color scheme to use (default: 'greys')
+        output (string):   output to Spyder plot window ('png', default) 
+                           or browser ('browser')
+                           or None for no output
+
+    Returns:
+        fig (plotly figure object): the figure object created
+    """
+    # If the user supplied an x axis label, add it
+    if type(xlabel) == str:
+        fig.update_xaxes(title = xlabel, row = 2 if residual else 1)
+    elif xlabel != None: # we can default to the name in the model
+        xlabel = fit.model.independent_vars[0]
+        
+    # If the user supplied a y axis label, add it
+    if type(ylabel) == str:
+        fig.update_yaxes(title = ylabel, row = 1)
+    elif ylabel != None:
+        print('Please enter a string for the y label.')
+
+    
+    # Just making some variables for convenience
+    # First figure out what the independent variable name(s) is(are)
+    independent_vars = fit.model.independent_vars
+
+    # The x data has to be the same for all the independent variables, so
+    # so get it from the first one in the list for safety
+    xdata = fit.userkws[independent_vars[0]]
+    ydata = fit.data
+    
+    # Resampling the fit so that it looks smooth to the eye
+    smoothx = np.linspace(xdata.min(), xdata.max(), len(xdata)*resample)
+
+    # Need to handle the fact that there may be multiple names for the 
+    # independent variable
+    kwargs = {}
+    for independent_var in independent_vars:
+        kwargs[independent_var] = smoothx
+    smoothy = fit.eval(**kwargs)
+    
+    # If we are plotting the residual, then we need two subplots
+    if residual:
+        fig = make_subplots(rows = 2, 
+                            cols = 1, 
+                            shared_xaxes = True, 
+                            row_heights = [0.8, 0.2],
+                            vertical_spacing = 0.05)
+    else:
+        fig = make_subplots()
+
+    # If we are plotting the confidence interval, then plot +/- N * 1-sigma 
+    # and fill between the two curves
+    if confidence != 0 and type(confidence) == int:
+        fig.add_scatter(x = smoothx, 
+                        y = smoothy + confidence * fit.eval_uncertainty(**kwargs), 
+                        mode = 'lines',
+                        line = {'color': 'gray', 'width': 0},
+                        row = 1, col = 1)
+        fig.add_scatter(x = smoothx, 
+                        y = smoothy - confidence * fit.eval_uncertainty(**kwargs), 
+                        mode = 'lines',
+                        line = {'color': 'gray', 'width': 0},
+                        row = 1, col = 1,
+                        fill = 'tonexty')
+    
+    # If we are plotting the individual components, go ahead and plot them first
+    if components == True:
+        
+        # Generate the components resampled to the smooth x array
+        comps = fit.eval_components(**kwargs)
+        # Loop through the components and plot each one
+        for comp in comps:
+            fig.add_scatter(x = smoothx, 
+                            y = comps[comp], 
+                            line = {'dash': 'dot', 'color':'grey'},
+                            row = 1, col = 1) 
+    
+    # Plot the raw data
+    fig.add_scatter(x = xdata, 
+                    y = ydata, 
+                    mode = 'markers', 
+                    name = 'Data', 
+                    legendrank = 1, 
+                    marker = {'color': 'rgb(180,180,180)', 'size': 8},
+                    line = {'color': 'rgb(180,180,180)', 'width' : 8},
+                    row = 1, col = 1)
+
+    # Plot the fit curve
+    fig.add_scatter(x = smoothx, 
+                    y = smoothy, 
+                    mode = 'lines', 
+                    name = 'Best Fit', 
+                    legendrank = 2, 
+                    line = {'color': 'black'},
+                    row = 1, col = 1)
+
+    # If we are doing residuals, plot the residual
+    if residual:
+        fig.add_scatter(x = xdata, 
+                        y = -1*fit.residual, # we need to multiply this by -1, to get the 'expected' behavior of data - fit. 
+                        mode = 'markers+lines', 
+                        name = 'Residual', 
+                        line = {'color': 'black', 'width':1},
+                        marker = {'color': 'black', 'size':2},
+                        showlegend = False,
+                        row = 2, col = 1)
+        
+        # Optionally plot the confidence interval of the residual
+        if confidence != 0 and type(confidence) == int:
+            
+            fig.add_scatter(x = smoothx, 
+                            y = confidence * fit.eval_uncertainty(**kwargs), 
+                            mode = 'lines',
+                            line = {'color': 'gray', 'width': 0},
+                            row = 2, col = 1)
+            fig.add_scatter(x = smoothx, 
+                            y = -1 * confidence * fit.eval_uncertainty(**kwargs), 
+                            mode = 'lines',
+                            line = {'color': 'gray', 'width': 0},
+                            row = 2, col = 1,
+                            fill = 'tonexty')
+        # Limit the ticks on the Residual axis so that it is readable
+        residual_lim = np.max(np.abs(fit.residual)) * 1.05
+        fig.update_yaxes(title = 'Residual', 
+                         range = [-residual_lim, residual_lim], 
+                         nticks = 3, zeroline = True, row = 2)
+        
+        #fig.update_yaxes(title = 'Residual', row = 2)
+
+
+    
+    # Update the layout
+    fig.update_layout(template = template, showlegend = False)
+    
+    # Flag the user if the fit did not finish successfully
+    fig_full = fig.full_figure_for_development()
+    if fit.ier not in (1, 2, 3, 4):
+        print(fit.result.lmdif_message)
+
+        # find min max of x and y and average instead
+        fig.add_annotation(x = (fig_full.layout.xaxis.range[1] - fig_full.layout.xaxis.range[0])/2,
+                           y = (fig_full.layout.yaxis.range[1] - fig_full.layout.yaxis.range[0])/2,
+                           text = 'Fit not converged.\nCheck command line for info.')
+
+    # Plot the figure to the specified output
+    quickplots.process_output(fig, output) # check to see how we should be outputting this plot
+
+    return fig
+
+
 
 # quickbar
 

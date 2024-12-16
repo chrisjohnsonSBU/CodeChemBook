@@ -1,5 +1,196 @@
-# -*- coding: utf-8 -*-
 import plotly.graph_objects as go
+import plotly.io as pio
+from dataclasses import dataclass, field
+import copy
+
+# Dictionary of colorways
+chem_colorways = dict(
+    default = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"],
+    pastels = ["#9dc4ff", "#dbaefe", "#ff91cd", "#ff8978", "#ffa600"],
+    jewel = ["#9966CC", "#009473", "#0F52BA", "#830E0D", "#E4D00A" ],
+    neon = ["#5fe8ff", "#fc49ab", "#ff7300", "#64ff00", "#e7ff00"],
+    reds = ["#950000", "#af3d27", "#c6654c", "#db8b74", "#eeb19f", "#ffd7cb"],
+    blues = ["#004867", "#336583", "#5684a1", "#79a4bf", "#9dc5df", "#c1e7ff"],
+    purples = ["#7d2c95", "#9650a9", "#ae72bd", "#c694d2", "#ddb6e6", "#f5d9fb"],
+    complimentary = ["#0773b1", "#e79f27"],
+    triadic = ["#a23768", "#1d5700", "#e79f27"],
+    split_complimentary = ["#0773b1", "#e79f27", "#d36027"],
+    analogous = ["#a23768", "#0773b1", "#9ba0d8"],
+    Lear = ["#0773b1", "#d36027", "#A23768", "#e79f27", "#9ba0d8", "#1d5700"],
+    greys = ['#00000', '#333333', '#666666', '#999999']
+    )
+
+
+'''
+TEMPLATE DICTIONARIES
+- these are each created in three parts...
+    1. An aux dictionary entry, which is supporting info for calculating things. This is not directly put into the final template
+    2. The data dictionary that will be added to the template
+    3. The layout dictionary that will be added to the template. 
+'''
+
+JACS = {}
+
+JACS["aux"] = dict( #specifications to allow calculations
+        dpi = 600,
+        canvas_width = 3.3, # convert cm to inches),
+        aratio = 8.5/11,
+        font_size = 7,
+        )
+
+JACS["data"] = dict(
+        scatter = [
+            dict(
+                line = dict(width = JACS["aux"]["font_size"] * JACS["aux"]["dpi"]/72*0.17), 
+                marker = dict(size = JACS["aux"]["font_size"] * JACS["aux"]["dpi"]/72*0.5)
+                )
+            ]
+        )
+
+JACS["layout"] = dict(
+        meta = JACS["aux"], # can store meta data here, has to be in layout
+        width = int(JACS["aux"]["dpi"] * JACS["aux"]["canvas_width"]),
+        height = int(JACS["aux"]["dpi"] * JACS["aux"]["canvas_width"]* JACS["aux"]["aratio"]), #give a golden ratio-esq
+        
+        xaxis = dict(automargin = True, showgrid = False, ticks = "outside", showline = True, mirror = True, zeroline = False, title = {'standoff': 0.5*JACS["aux"]["font_size"]*JACS["aux"]["dpi"]/72}, ticklen = 0.33*JACS["aux"]["font_size"]*JACS["aux"]["dpi"]/72),
+        yaxis = dict(automargin = True, showgrid = False, ticks = "outside", showline = True, mirror = True, zeroline = False, title = {'standoff': JACS["aux"]["font_size"]*JACS["aux"]["dpi"]/72}, ticklen = 0.33*JACS["aux"]["font_size"]*JACS["aux"]["dpi"]/72),
+        
+        margin=dict(l=JACS["aux"]["font_size"] * JACS["aux"]["dpi"]/72, r=JACS["aux"]["font_size"] * JACS["aux"]["dpi"]/72, t=JACS["aux"]["font_size"] * JACS["aux"]["dpi"]/72, b=JACS["aux"]["font_size"] * JACS["aux"]["dpi"]/72), # set the margins to be equal to the font size
+
+        colorway = chem_colorways["default"],
+
+        legend=dict(x=1, y=1, xanchor = "right", yanchor = "top"),
+        showlegend = True,
+
+        font = dict(
+            size = int(JACS["aux"]["font_size"] * JACS["aux"]["dpi"]/72),
+            family = "helvetica",
+            ),
+        )
+
+
+
+ccb_color = {}
+ccb_color["aux"] = dict( #specifications to allow calculations
+        dpi = 600,
+        canvas_width = 5, # in inches),
+        aratio = 148 / 210, # the ratio of A4 paper,
+        font_size = 8,
+        )
+
+ccb_color["data"] = dict(
+        scatter = [
+            dict(
+                line = dict(width = ccb_color["aux"]["font_size"] * ccb_color["aux"]["dpi"]/72*0.17), 
+                marker = dict(size = ccb_color["aux"]["font_size"] * ccb_color["aux"]["dpi"]/72*0.5)
+                )
+            ]
+        )
+
+ccb_color["layout"] = dict(
+        meta = ccb_color["aux"], # can store meta data here, has to be in layout
+        width = int(ccb_color["aux"]["dpi"] * ccb_color["aux"]["canvas_width"]),
+        height = int(ccb_color["aux"]["dpi"] * ccb_color["aux"]["canvas_width"]* JACS["aux"]["aratio"]), #give a golden ratio-esq
+        
+        xaxis = dict(automargin = True, showgrid = False, ticks = "outside", showline = True, mirror = True, zeroline = False, title = {'standoff': 0.5*ccb_color["aux"]["font_size"]*ccb_color["aux"]["dpi"]/72}, ticklen = 0.33*ccb_color["aux"]["font_size"]*ccb_color["aux"]["dpi"]/72),
+        yaxis = dict(automargin = True, showgrid = False, ticks = "outside", showline = True, mirror = True, zeroline = False, title = {'standoff': ccb_color["aux"]["font_size"]*ccb_color["aux"]["dpi"]/72}, ticklen = 0.33*ccb_color["aux"]["font_size"]*ccb_color["aux"]["dpi"]/72),
+        
+        margin=dict(l=ccb_color["aux"]["font_size"] * ccb_color["aux"]["dpi"]/72, r=ccb_color["aux"]["font_size"] * ccb_color["aux"]["dpi"]/72, t=ccb_color["aux"]["font_size"] * ccb_color["aux"]["dpi"]/72, b=ccb_color["aux"]["font_size"] * ccb_color["aux"]["dpi"]/72), # set the margins to be equal to the font size
+
+        colorway = chem_colorways["Lear"],
+
+        legend=dict(x=1, y=1, xanchor = "right", yanchor = "top"),
+        showlegend = True,
+
+        font = dict(
+            size = int(ccb_color["aux"]["font_size"] * ccb_color["aux"]["dpi"]/72),
+            family = "helvetica",
+            ),
+        )
+
+
+'''
+Now, update the chemplate_dicts to have all the chemplates we want
+'''
+
+chemplate_dicts = dict(
+    JACS = JACS,
+    ccb_color = ccb_color
+    simple_white = copy.deepcopy(pio.templates["simple_white"]),
+    )
+
+def new_chemplate(name = "simple_white", base_template = "simple_white"):
+    '''
+    Function that generates a new template, working from a base template. 
+    '''
+    new_template = copy.deepcopy(pio.templates[base_template]) # get the template for the base template
+    
+    
+    if "data" not in new_template:
+        new_template["data"] = {}
+    if "layout" not in new_template:
+        new_template["layout"] = {}
+
+    if "data" not in chemplate_dicts[name]:
+        chemplate_dicts[name]["data"] = {}
+    if "layout" not in chemplate_dicts[name]:
+        chemplate_dicts[name]["layout"] = {}
+        
+    new_template["data"].update(chemplate_dicts[name]["data"]) # update the data portion of the template with new values
+    new_template["layout"].update(chemplate_dicts[name]["layout"]) # update the layout portion of the template with new values
+
+    return go.layout.Template(new_template)
+
+def length_to_pixels (value, dpi):
+    if "in" in value:
+        pixels = int(value.split("in")[0].strip())*dpi 
+    if "cm" in value:
+        pixels = int(value.split("cm")[0].strip())*dpi*0.3937007874 # convert cm to in
+    
+    return pixels
+
+def apply_template(fig, chemplate, cols = 1, width = None, fontsize = None, height = None, dpi = None, fontfamily = None):    
+    if dpi is None:
+        dpi = chemplate["layout"]["meta"]["dpi"]
+        
+    if fontsize is not None:
+        chemplate["layout"]["font"]["size"] = int(fontsize * dpi/72)
+        
+    if fontfamily is not None:
+        chemplate["layout"]["font"]["family"] = fontfamily
+        
+    if cols == 2:
+        chemplate["layout"]["width"] = 7*dpi 
+        
+    if width is not None:
+        chemplate["layout"]["width"] = length_to_pixels(width, dpi)
+            
+    if height is not None:
+        chemplate["layout"]["height"] = length_to_pixels(height, dpi)
+
+    fig.update_layout(template = chemplate, dict1 = chemplate["layout"])
+    
+@dataclass
+class chemplates:
+    JACS : dict = field(default_factory = lambda: new_chemplate("JACS",))
+    ccb_color : dict = field(default_factory = lambda: new_chemplate("ccb_color",))
+
+
+# now initilize the templates class, so we can access the attributes
+chemplate = chemplates()
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -10,36 +201,7 @@ import plotly.graph_objects as go
 # restructure this as a data class
 # be able to accept a dictionary key-like thing for this, for the ones that exist right now
 # make classes for each publisher/family (acs, rsc, springer, elsevier, mdpi, etc AND by use case: slides, powerpoint, keynote, etc) and then have subclasses for specifics (JACS, ChemSci, dark, light, etc. )
-
-# if you don't specify anything you basically get simple_white
-def chemPlot(name, ratio = None, font = None, colors = None, legend = "top-right"): # default ratio is US paper
-    '''
-    Gets plotly layouts that produce figures that are formatted specific journals
-    
-    Required parameters:
-    name: string
-        specifies the template in chemTemplates
-    
-    Optional parameters:
-    aratio: foat
-        specifies the desired aspect ratio of width/height
-    cProg: list of color values 
-        specify the colors that are cycled through
-    dpi: numeric
-        the desired pixels per inch, and this is used to determine text size, linewidth, marker size, etc. 
-    
-    Return:
-        plotly layout object containing the specified parameters
-    '''
-    
-    if "JACS" in name: # from appendix 2 of https://publish.acs.org/publish/author_guidelines?coden=jacsat#preparing_graphics
-        dpi = 300
-        aratio = 8.5/11
-        font_size = 6
-        page_width = 3.3 # in inches
-        font_family = "helvetica"
-        if "2" in name:
-            page_width = 7.0
+'''
         
     if "ChemSci" in name: # from here: https://www.rsc.org/journals-books-databases/author-and-reviewer-hub/authors-information/prepare-and-format/figures-graphics-images/#figuresgraphics
         dpi = 600
@@ -95,125 +257,4 @@ def chemPlot(name, ratio = None, font = None, colors = None, legend = "top-right
             if "2" in name: 
                 page_width = 6.25
                 aratio = 5.75/6.25
-            
-    #if "CodeChemBook" in name:
-    
-    # check to see if we need to use a user supplied ratio
-    if ratio != None:
-        aratio = ratio
-        if "golden" in ratio:
-            aratio = 1/1.61803
-        if "letter" in ratio:
-            aratio = 8.5/11
-        if "A4" in ratio:
-            aratio = 210/297
-        if "square" in ratio:
-            aratio = 1
-        if "movie" in ratio:
-            aratio = 1/2.4
-        if "tv" in ratio:
-            aratio = 1/1.77
-        if "ppt" in ratio:
-            aratio = 9/16
-            if "narrow" in ratio:
-                aratio = 3/4
-
-    
-    
-    # select colors
-    if colors == None:
-        colorway = ["#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF"]
-    if colors == "pastel":
-        colorway = ["#9dc4ff", "#dbaefe", "#ff91cd", "#ff8978", "#ffa600"]
-    if colors == "jewel":
-        colorway = ["#9966CC", "#009473", "#0F52BA", "#830E0D", "#E4D00A" ]
-    if colors == "neon":
-        colorway = ["#5fe8ff", "#fc49ab", "#ff7300", "#64ff00", "#e7ff00"]
-    if colors == "reds":
-        colorway = ["#950000", "#af3d27", "#c6654c", "#db8b74", "#eeb19f", "#ffd7cb"]
-    if colors == "blues":
-        colorway = ["#004867", "#336583", "#5684a1", "#79a4bf", "#9dc5df", "#c1e7ff"]
-    if colors == "purples":
-        colorway = ["#7d2c95", "#9650a9", "#ae72bd", "#c694d2", "#ddb6e6", "#f5d9fb"]
-    if colors == "complimentary":
-        colorway = ["#0773b1", "#e79f27"]
-    if colors == "triadic":
-        colorway = ["#a23768", "#1d5700", "#e79f27"]
-    if colors == "split complimentary":
-        colorway = ["#0773b1", "#e79f27", "#d36027"]
-    if colors == "analogous":
-        colorway = ["#a23768", "#0773b1", "#9ba0d8"]
-    if colors == "Lear":
-        colorway = ["#0773b1", "#d36027", "#A23768", "#e79f27", "#9ba0d8", "#1d5700"]
-    
-    
-    #let's handle the legend...
-    sl = True
-    lx = 1
-    ly = 1
-    xanchor = 'right'
-    yanchor='top'
-    
-    if "bottom" in legend:
-        ly = 0
-        yanchor = "bottom"
-    if "left" in legend:
-        lx = 0
-        xanchor = "left"
-    if "none" in legend:
-        sl = False
-    if type(legend) == list and len(legend) == 2:
-        try:
-            lx = float(legend[0])
-        except:
-            raise ValueError("Error in using 'legend': float or int type expected")  
-        try: 
-            ly = float(legend[1])
-        except:
-            raise ValueError("Error in using 'legend': float or int type expected")
-        
-    chemTemplate = dict( 
-            data = dict(
-                scatter = [dict(line = dict(width = font_size*dpi/72*0.17), marker = dict(size = font_size*dpi/72*0.5))] # base size on font (since presumed to be legible)
-                ),
-            layout = dict(
-                width = int(dpi*page_width), # for a single column, need 3.3in at 300 dpi
-                height = int(dpi*page_width*aratio), #give a golden ratio-esq
-                
-                xaxis = dict(automargin = True, showgrid = False, ticks = "outside", showline = True, mirror = True, zeroline = False, title = {'standoff': 0.5*font_size*dpi/72}, ticklen = 0.33*font_size*dpi/72),
-                yaxis = dict(automargin = True, showgrid = False, ticks = "outside", showline = True, mirror = True, zeroline = False, title = {'standoff': font_size*dpi/72}, ticklen = 0.33*font_size*dpi/72),
-                
-                font = dict(family = font_family, size = font_size*dpi/72), # equivalent to 6pt
-                
-                margin=dict(l=font_size*dpi/72, r=font_size*dpi/72, t=font_size*dpi/72, b=font_size*dpi/72), # set the margins to be equal to the font size
-                
-                colorway = colorway,
-                
-                legend=dict(x=lx, y=ly, xanchor = xanchor, yanchor = yanchor),
-                showlegend = sl
-                )
-            )
- 
-    return go.layout.Template(chemTemplate)
-
-
-
 '''
-Below we have some dataclass approach....
-Wnat to use classes and subclasses....
-
-use: is this for publication or presentation?
-
-if it is publication, can use publisher (ACS, RSC, NSF, etc) -> journal (JACS, ChemSci, grant, etc)
-if it is a presentation, can use software (powerpoint, keynote, slides, etc) and then theme? (dark, light, etc.)
-'''
-
-from dataclasses import dataclass, field
-
-@dataclass
-class template:
-    JACS: go.layout.Template = field(default_factory=lambda: chemPlot("JACS"))
-    ChemSci: go.layout.Template = field(default_factory=lambda: chemPlot("ChemSci"))
-    
-
-quickTemplate = template()
