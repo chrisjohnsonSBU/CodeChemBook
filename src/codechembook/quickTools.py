@@ -3,11 +3,18 @@ import numpy as np
 from codechembook import quickPlots as qp
 
 
-def quickOpenCSV(file, cols = None, delimiter = ",", skip_header = 1):
+def quickReadCSV(file = None, cols = None, delimiter = ",", skip_header = 1):
     '''
     This function is going to read from a csv quickly. 
     The base behavior is to just take a number of columns and read them and return them
     '''
+    if file is None:
+        file = quickOpenFilename()
+    
+    if file is None:
+        print('No file selected.')
+        return
+    
     if cols == None: # no specific set of columns specified
         read_columns = np.genfromtxt(file, 
                                     delimiter = delimiter,
@@ -206,32 +213,25 @@ def quickSelectFolder(title="Select folder", initialdir="."):
     - Path: A Path object representing the selected folder, or None if no folder was selected.
     """
     from PyQt5.QtWidgets import QApplication, QFileDialog
-    from PyQt5.QtCore import Qt
     from pathlib import Path
 
+    # Ensure initialdir is a string (if passed as a Path object)
     if isinstance(initialdir, Path):
         initialdir = str(initialdir)
 
+    # Ensure QApplication instance exists
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
 
-    # Open the folder selection dialog with a "stay on top" flag
-    dialog = QFileDialog()
-    dialog.setWindowTitle(title)
-    dialog.setFileMode(QFileDialog.DirectoryOnly)
-    dialog.setOptions(QFileDialog.ShowDirsOnly)
-    dialog.setWindowFlags(dialog.windowFlags() | Qt.WindowStaysOnTopHint)
+    # Open the folder selection dialog
+    folderpath = QFileDialog.getExistingDirectory(None, title, initialdir)
 
-    # Set the initial directory and open the dialog
-    dialog.setDirectory(initialdir)
-    if dialog.exec_():
-        folderpath = dialog.selectedFiles()[0]
-        return Path(folderpath)
-    else:
-        return None
+    # Return the selected folder as a Path object, or None if no folder was selected
+    return Path(folderpath) if folderpath else None
 
-def quickSaveFilename(title="Choose or create a filename to save", initialdir='.', filetypes='All files*.*'):
+def quickSaveFilename(title="Choose or create a filename to save", 
+                      initialdir='.', filetypes='All files, *.*'):
     """
     Opens a file dialog to choose a filename for saving, returns a Path object.
     
@@ -256,6 +256,33 @@ def quickSaveFilename(title="Choose or create a filename to save", initialdir='.
     filepath, _ = QFileDialog.getSaveFileName(None, title, initialdir, filetypes)
 
     return Path(filepath)
+
+
+def quickPopupMessage(message="This is a message. Click OK to continue."):
+    """
+    Displays a simple popup with a message and an OK button.
+
+    Parameters:
+    - message (str): The message to display in the popup.
+
+    Returns:
+    - None
+    """
+    from PyQt5.QtWidgets import QApplication, QMessageBox
+
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])  # Create a QApplication if it doesn't already exist
+
+    # Create a message box
+    msg_box = QMessageBox()
+    msg_box.setIcon(QMessageBox.Information)  # Set the icon (Information, Warning, etc.)
+    msg_box.setText(message)  # Set the message text
+    msg_box.setWindowTitle("Message")  # Set the window title
+    msg_box.setStandardButtons(QMessageBox.Ok)  # Add an OK button
+
+    # Show the message box and wait for user interaction
+    msg_box.exec_()
 
 def scientificNotation(number, precision = None, exponent = None):
     from symbols import math, typography
