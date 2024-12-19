@@ -129,7 +129,7 @@ def quickPlotCSV(file, cols = None, skip_header = 1, plotType = "scatter", xcol 
     plotType: string the sort of plot we want "scatter" "bars" "hist", etc
     '''
 
-    read_columns = quickOpenCSV(file, cols = cols, skip_header = skip_header)
+    read_columns = quickReadCSV(file, cols = cols, skip_header = skip_header)
 
     xdata = read_columns[xcol]
     ydata = []
@@ -283,6 +283,56 @@ def quickPopupMessage(message="This is a message. Click OK to continue."):
 
     # Show the message box and wait for user interaction
     msg_box.exec_()
+
+def importFromPy(py_name, *args):
+    """
+    Load a function or other object from a Python file that is not in the CWD or library
+
+    Parameters
+    obj_name (str): the name of the function (or other object) that you would like to import
+    py_name (str):   the name of the Python script from which you would like to import
+
+    """
+    from pathlib import Path
+    from os import chdir
+    import __main__
+    
+    # Check to see if the user supplied the full file name or just the stem
+    if '.py' not in py_name:
+        filename = py_name + '.py'
+    else:
+        filename = py_name
+        py_name = py_name.split('.')[0]
+        
+    # The user supplied at least one object to import.  Loop through the supplied objects
+    for obj_name in args:
+        print(obj_name)
+        # Try to import.  This will just work if the py file is in the CWD, otherwise we'll have to look for it
+        try:
+            exec(f'from {py_name} import {obj_name}')  # import the function we want direct access to
+        except ModuleNotFoundError:
+            # Let the user know that we need to find the file
+            quickPopupMessage(f'{filename} not found.  Please locate it using the file dialog.  Click OK to open the file dialog.')
+            # Open the file dialog and limit it to only looking for the specified file
+            path = quickOpenFilename(filetypes = filename)
+            # Get the absolute path to the CWD then change to the location of the file
+            current_path = Path('.').resolve()
+            chdir(path.parent)
+            # Import
+            try:
+                exec(f'from {py_name} import {obj_name}')
+            except ImportError:
+                quickPopupMessage(f'{obj_name} not found in {filename}!')
+                raise
+            except ModuleNotFoundError:
+                quickPopupMessage(f'{py_name} not found!')
+                raise
+            # Change back to the original CWD
+            chdir(current_path)
+            
+        print(obj_name, locals()[obj_name])
+        setattr(__main__, obj_name, locals()[obj_name])
+
 
 def scientificNotation(number, precision = None, exponent = None):
     from symbols import math, typography

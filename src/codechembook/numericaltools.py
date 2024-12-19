@@ -6,6 +6,7 @@
 ###############################################################################
 
 import scipy.integrate as spi
+import numpy as np
 
 def integrateRange(y, x, limits, method='trapezoid'):
     """
