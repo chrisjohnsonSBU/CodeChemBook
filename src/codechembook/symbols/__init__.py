@@ -12,4 +12,4 @@ from . import greek
 from . import math
 from . import script
 from . import typography
-from . import typsettingHTML # this one is functions
+from . import TypesettingHTML # this one is functions

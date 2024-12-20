@@ -1,6 +1,5 @@
-# some tools for handlign opening and plotting....
+# some tools for handling opening and plotting....
 import numpy as np
-from codechembook import quickPlots as qp
 
 
 def quickReadCSV(file = None, cols = None, delimiter = ",", skip_header = 1):
@@ -123,11 +122,14 @@ def quickSaveCSV(file, data, format = None, delimiter = ', ', header = ''):
     # Write the file
     np.savetxt(file, prep_data, delimiter = delimiter, fmt = new_format, header = header, comments = '')
 
+
 def quickPlotCSV(file, cols = None, skip_header = 1, plotType = "scatter", xcol = 0):
     '''
     xcol: int which is the column number that will be the x-data
     plotType: string the sort of plot we want "scatter" "bars" "hist", etc
     '''
+
+    from codechembook import quickPlots as qp
 
     read_columns = quickReadCSV(file, cols = cols, skip_header = skip_header)
 
@@ -143,6 +145,7 @@ def quickPlotCSV(file, cols = None, skip_header = 1, plotType = "scatter", xcol 
         fig.show()
 
     return fig
+
 
 def quickOpenFilenames(title="Select files to open", initialdir='.', filetypes='All files, *.*', sort = True):
     """
@@ -383,4 +386,5 @@ def scientificNotation(number, precision = None, exponent = None):
     formattedScientificNotation = f'{sciCoefficient}{math.times}10{supString}'
     
     return formattedScientificNotation
+
 
