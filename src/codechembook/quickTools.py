@@ -310,6 +310,8 @@ def importFromPy(py_name, *args):
     import importlib.util
     from pathlib import Path
     import sys
+    import builtins
+    import keyword
 
     # Check if the user supplied the full file name or just the stem
     if not py_name.endswith('.py'):
@@ -352,8 +354,11 @@ def importFromPy(py_name, *args):
     # Add to the global namespace
     import __main__
     for obj_name, obj in imported_objects.items():
-        setattr(__main__, obj_name, obj)
-        print(f"Imported {obj_name}: {obj}")
+        if obj_name in dir(builtins) or keyword.iskeyword(obj_name):
+            print(f"{obj_name} is a reserved keyword or built-in function name and will not be imported.")
+        else:
+            setattr(__main__, obj_name, obj)
+            print(f"Imported {obj_name}")
 
     return imported_objects
 
