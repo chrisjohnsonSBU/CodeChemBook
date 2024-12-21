@@ -155,8 +155,8 @@ def quickOpenFilenames(title="Select files to open", initialdir='.', filetypes='
     - title (str): The title of the file selection dialog window. Defaults to "Select files to open".
     - initialdir (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
                                Accepts both Path objects and strings.
-    - filetypes (tuple): The types of files to display in the dialog. Defaults to showing all files.
-                         Should be a tuple in the format (('Description', '*.extension')).
+    - filetypes (str or iterable): The types of files to display in the dialog. Defaults to showing all files.
+                         Should be a string in the format 'Description, *.extension' or a list/tuple of the same.
     
     Returns:
     - List[Path]: A sorted list of selected file paths as Path objects.
@@ -168,7 +168,11 @@ def quickOpenFilenames(title="Select files to open", initialdir='.', filetypes='
     # Ensure initialdir is a string (if passed as a Path object)
     if isinstance(initialdir, Path):
         initialdir = str(initialdir)
-
+        
+    # If we got a list of file types, reformat it for getOpenFileName as a string with ';;' between entries
+    if isinstance(filetypes, list):
+        filetypes = ';;'.join(filetypes)
+    
     app = QApplication([])  # Create a Qt application
     filepaths, _ = QFileDialog.getOpenFileNames(None, title, initialdir, filetypes)
     
@@ -185,8 +189,8 @@ def quickOpenFilename(title="Select file to open", initialdir='.', filetypes='Al
     - title (str): The title of the file selection dialog window. Defaults to "Select files to open".
     - initialdir (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
                                Accepts both Path objects and strings.
-    - filetypes (tuple): The types of files to display in the dialog. Defaults to showing all files.
-                         Should be a tuple in the format (('Description', '*.extension')).
+    - filetypes (str or iterable): The types of files to display in the dialog. Defaults to showing all files.
+                         Should be a string in the format 'Description, *.extension' or a list/tuple of the same.
     
     Returns:
     - Path: A Path object.
@@ -197,6 +201,10 @@ def quickOpenFilename(title="Select file to open", initialdir='.', filetypes='Al
     # Ensure initialdir is a string (if passed as a Path object)
     if isinstance(initialdir, Path):
         initialdir = str(initialdir)
+        
+    # If we got a list of file types, reformat it for getOpenFileName as a string with ';;' between entries
+    if isinstance(filetypes, list):
+        filetypes = ';;'.join(filetypes)
         
     app = QApplication([])  # Create a Qt application
     filepath, _ = QFileDialog.getOpenFileName(None, title, initialdir, filetypes)
@@ -242,8 +250,8 @@ def quickSaveFilename(title="Choose or create a filename to save",
     - title (str): The title of the file selection dialog window. Defaults to "Define file to save".
     - initialdir (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
                                Accepts both Path objects and strings.
-    - filetypes (tuple): The types of files to display in the dialog. Defaults to showing all files.
-                         Should be a tuple in the format (('Description', '*.extension')).
+    - filetypes (str or iterable): The types of files to display in the dialog. Defaults to showing all files.
+                         Should be a string in the format 'Description, *.extension' or a list/tuple of the same.
     
     Returns:
     - Path: the path to the filename that is to be saved.
@@ -255,6 +263,10 @@ def quickSaveFilename(title="Choose or create a filename to save",
     if isinstance(initialdir, Path):
         initialdir = str(initialdir)
         
+    # If we got a list of file types, reformat it for getOpenFileName as a string with ';;' between entries
+    if isinstance(filetypes, list):
+        filetypes = ';;'.join(filetypes)
+    
     app = QApplication([])  # Create a Qt application
     filepath, _ = QFileDialog.getSaveFileName(None, title, initialdir, filetypes)
 
@@ -286,56 +298,124 @@ def quickPopupMessage(message="This is a message. Click OK to continue."):
 
     # Show the message box and wait for user interaction
     msg_box.exec_()
-
+    
 def importFromPy(py_name, *args):
     """
-    Load a function or other object from a Python file that is not in the CWD or library
+    Load a function or other object from a Python file that is not in the CWD or library.
 
-    Parameters
-    obj_name (str): the name of the function (or other object) that you would like to import
-    py_name (str):   the name of the Python script from which you would like to import
-
+    Parameters:
+    py_name (str): The name of the Python script from which you want to import.
+    *args (str): Names of the objects to import from the script.
     """
+    import importlib.util
     from pathlib import Path
-    from os import chdir
-    import __main__
-    
-    # Check to see if the user supplied the full file name or just the stem
-    if '.py' not in py_name:
+    import sys
+
+    # Check if the user supplied the full file name or just the stem
+    if not py_name.endswith('.py'):
         filename = py_name + '.py'
     else:
         filename = py_name
         py_name = py_name.split('.')[0]
-        
-    # The user supplied at least one object to import.  Loop through the supplied objects
-    for obj_name in args:
-        print(obj_name)
-        # Try to import.  This will just work if the py file is in the CWD, otherwise we'll have to look for it
-        try:
-            exec(f'from {py_name} import {obj_name}')  # import the function we want direct access to
-        except ModuleNotFoundError:
-            # Let the user know that we need to find the file
-            quickPopupMessage(f'{filename} not found.  Please locate it using the file dialog.  Click OK to open the file dialog.')
-            # Open the file dialog and limit it to only looking for the specified file
-            path = quickOpenFilename(filetypes = filename)
-            # Get the absolute path to the CWD then change to the location of the file
-            current_path = Path('.').resolve()
-            chdir(path.parent)
-            # Import
-            try:
-                exec(f'from {py_name} import {obj_name}')
-            except ImportError:
-                quickPopupMessage(f'{obj_name} not found in {filename}!')
-                raise
-            except ModuleNotFoundError:
-                quickPopupMessage(f'{py_name} not found!')
-                raise
-            # Change back to the original CWD
-            chdir(current_path)
-            
-        print(obj_name, locals()[obj_name])
-        setattr(__main__, obj_name, locals()[obj_name])
 
+    # Locate the file
+    path = Path(filename)
+    if not path.exists():
+        quickPopupMessage(f'{filename} not found. Please locate it using the file dialog.')
+        path = quickOpenFilename(filetypes="Python Files, *.py")
+
+        if not path:
+            raise FileNotFoundError(f"The file {filename} could not be located.")
+
+    # Load its module
+    module_name = py_name
+    module_spec = importlib.util.spec_from_file_location(module_name, str(path))
+    module = importlib.util.module_from_spec(module_spec)
+
+    # Import the module
+    try:
+        sys.modules[module_name] = module
+        module_spec.loader.exec_module(module)
+    except Exception as e:
+        quickPopupMessage(f"Failed to load module {filename}: {e}")
+        raise
+
+    # Import objects
+    imported_objects = {}
+    for obj_name in args:
+        try:
+            imported_objects[obj_name] = getattr(module, obj_name)
+        except AttributeError:
+            quickPopupMessage(f"{obj_name} not found in {filename}.")
+            raise ImportError(f"'{obj_name}' not found in '{filename}'.")
+
+    # Add to the global namespace
+    import __main__
+    for obj_name, obj in imported_objects.items():
+        setattr(__main__, obj_name, obj)
+        print(f"Imported {obj_name}: {obj}")
+
+    return imported_objects
+
+
+# =============================================================================
+# def importFromPy(py_name, *args):
+#     """
+#     Load a function or other object from a Python file that is not in the CWD or library
+# 
+#     Parameters
+#     obj_name (str): the name of the function (or other object) that you would like to import
+#     py_name (str):   the name of the Python script from which you would like to import
+# 
+#     """
+#     from pathlib import Path
+#     from os import chdir
+#     import __main__
+#     import sys
+#     
+#     # Check to see if the user supplied the full file name or just the stem
+#     if '.py' not in py_name:
+#         filename = py_name + '.py'
+#     else:
+#         filename = py_name
+#         py_name = py_name.split('.')[0]
+#     print(args)
+#     # The user supplied at least one object to import.  Loop through the supplied objects
+#     for obj_name in args:
+#         print(obj_name)
+#         # Try to import.  This will just work if the py file is in the CWD, otherwise we'll have to look for it
+#         try:
+#             exec(f'from {py_name} import {obj_name}')  # import the function we want direct access to
+#         except (ModuleNotFoundError, ImportError):
+#             # Let the user know that we need to find the file
+#             quickPopupMessage(f'{filename} not found.  Please locate it using the file dialog.  Click OK to open the file dialog.')
+#             # Open the file dialog and limit it to only looking for the specified file
+#             path = quickOpenFilename(filetypes = filename)
+#             # Get the absolute path to the CWD then change to the location of the file
+#             current_path = Path('.').resolve()
+#             print(path.parent)
+#             print(path.exists())
+#             print(path.cwd())
+#             [print('*', p) for p in sys.path]
+#             chdir(path.parent)
+#             print(path.cwd())
+#             [print('*', p) for p in sys.path]
+#             # Import
+#             try:
+#                 exec(f'from {py_name} import {obj_name}')
+#             except ImportError:
+#                 quickPopupMessage(f'{obj_name} not found in {filename}!')
+#                 raise
+#             except ModuleNotFoundError:
+#                 quickPopupMessage(f'{py_name} not found!')
+#                 raise
+#             # Change back to the original CWD
+#             chdir(current_path)
+#             
+#         print(obj_name, locals()[obj_name])
+#         setattr(__main__, obj_name, locals()[obj_name])
+# 
+# =============================================================================
 
 def scientificNotation(number, precision = None, exponent = None):
     from symbols import math, typography
