@@ -1,7 +1,6 @@
 # some tools for handling opening and plotting....
 import numpy as np
 
-
 def quickReadCSV(file = None, cols = None, delimiter = ",", skip_header = 1):
     '''
     This function is going to read from a csv quickly. 
@@ -122,7 +121,6 @@ def quickSaveCSV(file, data, format = None, delimiter = ', ', header = ''):
     # Write the file
     np.savetxt(file, prep_data, delimiter = delimiter, fmt = new_format, header = header, comments = '')
 
-
 def quickPlotCSV(file, cols = None, skip_header = 1, plotType = "scatter", xcol = 0):
     '''
     xcol: int which is the column number that will be the x-data
@@ -146,7 +144,6 @@ def quickPlotCSV(file, cols = None, skip_header = 1, plotType = "scatter", xcol 
 
     return fig
 
-
 def quickOpenFilenames(title="Select files to open", initialdir='.', filetypes='All files, *.*', sort = True):
     """
     Opens a file dialog to select multiple files, returning a sorted list of Path objects.
@@ -161,7 +158,7 @@ def quickOpenFilenames(title="Select files to open", initialdir='.', filetypes='
     Returns:
     - List[Path]: A sorted list of selected file paths as Path objects.
     """
-    from PyQt5.QtWidgets import QApplication, QFileDialog
+    from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
     from pathlib import Path
 
 
@@ -173,8 +170,20 @@ def quickOpenFilenames(title="Select files to open", initialdir='.', filetypes='
     if isinstance(filetypes, list):
         filetypes = ';;'.join(filetypes)
     
-    app = QApplication([])  # Create a Qt application
+    # Ensure QApplication instance exists
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])
+        
+    # Create a temporary hidden parent window to ensure the dialog appears on top
+    parent = QMainWindow()
+    parent.hide()  # Ensure the parent window is hidden
+    
     filepaths, _ = QFileDialog.getOpenFileNames(None, title, initialdir, filetypes)
+    
+    # Close and clean up the parent window
+    parent.close()
+    parent.deleteLater()
     
     if sort:
         filepaths = sorted(filepaths)
@@ -195,7 +204,7 @@ def quickOpenFilename(title="Select file to open", initialdir='.', filetypes='Al
     Returns:
     - Path: A Path object.
     """
-    from PyQt5.QtWidgets import QApplication, QFileDialog
+    from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
     from pathlib import Path
 
     # Ensure initialdir is a string (if passed as a Path object)
@@ -206,8 +215,20 @@ def quickOpenFilename(title="Select file to open", initialdir='.', filetypes='Al
     if isinstance(filetypes, list):
         filetypes = ';;'.join(filetypes)
         
-    app = QApplication([])  # Create a Qt application
+    # Ensure QApplication instance exists
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])
+        
+    # Create a temporary hidden parent window to ensure the dialog appears on top
+    parent = QMainWindow()
+    parent.hide()  # Ensure the parent window is hidden
+    
     filepath, _ = QFileDialog.getOpenFileName(None, title, initialdir, filetypes)
+    
+    # Close and clean up the parent window
+    parent.close()
+    parent.deleteLater()
     
     return Path(filepath)
 
@@ -223,7 +244,7 @@ def quickSelectFolder(title="Select folder", initialdir="."):
     Returns:
     - Path: A Path object representing the selected folder, or None if no folder was selected.
     """
-    from PyQt5.QtWidgets import QApplication, QFileDialog
+    from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
     from pathlib import Path
 
     # Ensure initialdir is a string (if passed as a Path object)
@@ -234,9 +255,17 @@ def quickSelectFolder(title="Select folder", initialdir="."):
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
+        
+    # Create a temporary hidden parent window to ensure the dialog appears on top
+    parent = QMainWindow()
+    parent.hide()  # Ensure the parent window is hidden
 
-    # Open the folder selection dialog
-    folderpath = QFileDialog.getExistingDirectory(None, title, initialdir)
+    # Open the folder selection dialog with the hidden parent
+    folderpath = QFileDialog.getExistingDirectory(parent, title, initialdir)
+
+    # Close and clean up the parent window
+    parent.close()
+    parent.deleteLater()
 
     # Return the selected folder as a Path object, or None if no folder was selected
     return Path(folderpath) if folderpath else None
@@ -245,33 +274,42 @@ def quickSaveFilename(title="Choose or create a filename to save",
                       initialdir='.', filetypes='All files, *.*'):
     """
     Opens a file dialog to choose a filename for saving, returns a Path object.
-    
+
     Parameters:
     - title (str): The title of the file selection dialog window. Defaults to "Define file to save".
     - initialdir (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
-                               Accepts both Path objects and strings.
+                                Accepts both Path objects and strings.
     - filetypes (str or iterable): The types of files to display in the dialog. Defaults to showing all files.
-                         Should be a string in the format 'Description, *.extension' or a list/tuple of the same.
-    
+                                   Should be a string in the format 'Description, *.extension' or a list/tuple of the same.
+
     Returns:
     - Path: the path to the filename that is to be saved.
     """
-    from PyQt5.QtWidgets import QApplication, QFileDialog
+    from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
     from pathlib import Path
 
     # Ensure initialdir is a string (if passed as a Path object)
     if isinstance(initialdir, Path):
         initialdir = str(initialdir)
         
-    # If we got a list of file types, reformat it for getOpenFileName as a string with ';;' between entries
+    # If we got a list of file types, reformat it for getSaveFileName as a string with ';;' between entries
     if isinstance(filetypes, list):
         filetypes = ';;'.join(filetypes)
     
-    app = QApplication([])  # Create a Qt application
-    filepath, _ = QFileDialog.getSaveFileName(None, title, initialdir, filetypes)
+    app = QApplication.instance() or QApplication([])  # Ensure QApplication exists
 
-    return Path(filepath)
+    # Create a temporary hidden parent window
+    parent = QMainWindow()
+    parent.hide()  # Do not display the window
 
+    # Open the file dialog with the temporary parent
+    filepath, _ = QFileDialog.getSaveFileName(parent, title, initialdir, filetypes)
+
+    # Close the temporary parent window
+    parent.close()
+    parent.deleteLater()  # Ensure proper cleanup of the parent window
+
+    return Path(filepath) if filepath else None
 
 def quickPopupMessage(message="This is a message. Click OK to continue."):
     """
@@ -283,22 +321,359 @@ def quickPopupMessage(message="This is a message. Click OK to continue."):
     Returns:
     - None
     """
-    from PyQt5.QtWidgets import QApplication, QMessageBox
+    from PyQt5.QtWidgets import QApplication, QMessageBox, QMainWindow
+    from PyQt5.QtCore import Qt
 
     app = QApplication.instance()
     if app is None:
         app = QApplication([])  # Create a QApplication if it doesn't already exist
 
-    # Create a message box
-    msg_box = QMessageBox()
-    msg_box.setIcon(QMessageBox.Information)  # Set the icon (Information, Warning, etc.)
-    msg_box.setText(message)  # Set the message text
-    msg_box.setWindowTitle("Message")  # Set the window title
-    msg_box.setStandardButtons(QMessageBox.Ok)  # Add an OK button
+    # Create a visible temporary parent window
+    parent = QMainWindow()
+    parent.setWindowFlags(Qt.WindowStaysOnTopHint)  # Ensure it's always on top
+    parent.setWindowTitle("Temporary Parent")
+    parent.resize(1, 1)  # Make the parent very small
+    parent.show()  # Show the parent window
+    parent.raise_()
+    parent.activateWindow()
+
+    # Create the message box with the parent
+    msg_box = QMessageBox(parent)
+    msg_box.setIcon(QMessageBox.Information)
+    msg_box.setText(message)
+    msg_box.setWindowTitle("Message")
+    msg_box.setStandardButtons(QMessageBox.Ok)
+
+    # Ensure the message box is always on top
+    msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowStaysOnTopHint)
+    msg_box.raise_()  # Bring it to the front
+    msg_box.activateWindow()  # Make it the active window
 
     # Show the message box and wait for user interaction
     msg_box.exec_()
+
+    # Clean up the parent window
+    parent.hide()
+    app.processEvents()
+    parent.close()
+    parent.deleteLater()
+
+def quickPopupChoice(message="Choose an option:", option1="Option 1", option2="Option 2"):
+    """
+    Displays a popup dialog with a message and two buttons, returning the selected option as a string.
+
+    Parameters:
+    - message (str): The message to display in the popup.
+    - option1 (str): The text for the first button.
+    - option2 (str): The text for the second button.
+
+    Returns:
+    - str: The text of the button selected by the user.
+    """
+    from PyQt5.QtWidgets import QApplication, QMessageBox, QMainWindow
+    from PyQt5.QtCore import Qt
+
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])  # Create a QApplication if it doesn't already exist
+
+    # Create a visible temporary parent window to ensure the popup appears on top
+    parent = QMainWindow()
+    parent.setWindowFlags(Qt.WindowStaysOnTopHint)  # Ensure it's always on top
+    parent.setWindowTitle("Temporary Parent")
+    parent.resize(1, 1)  # Make the parent very small
+    parent.show()  # Show the parent window
+    parent.raise_()
+    parent.activateWindow()
+
+    # Create the message box with the parent
+    msg_box = QMessageBox(parent)
+    msg_box.setIcon(QMessageBox.Question)  # Set the icon to Question
+    msg_box.setText(message)
+    msg_box.setWindowTitle("Make a Choice")
+
+    # Add the two custom buttons
+    button1 = msg_box.addButton(option1, QMessageBox.ActionRole)
+    button2 = msg_box.addButton(option2, QMessageBox.ActionRole)
+
+    # Ensure the message box always appears on top
+    msg_box.setWindowFlags(msg_box.windowFlags() | Qt.WindowStaysOnTopHint)
+    msg_box.raise_()
+    msg_box.activateWindow()
+
+    # Show the message box and wait for the user's choice
+    msg_box.exec_()
+
+    # Determine which button was clicked
+    if msg_box.clickedButton() == button1:
+        choice = option1
+    elif msg_box.clickedButton() == button2:
+        choice = option2
+    else:
+        choice = None  # Fallback in case no valid button was clicked (shouldn't happen)
+
+    # Clean up the parent window
+    parent.hide()
+    app.processEvents()
+    parent.close()
+    parent.deleteLater()
+
+    return choice
+
+def quickPopupInput(message="Enter some text:"):
+    """
+    Displays a popup dialog with a message, a text input box, and OK/Cancel buttons.
     
+    Parameters:
+    - message (str): The message to display in the popup.
+
+    Returns:
+    - str: The text entered by the user if OK is clicked.
+    - None: If Cancel is clicked.
+    """
+    from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QMainWindow
+    from PyQt5.QtCore import Qt
+
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])  # Create a QApplication if it doesn't already exist
+
+    # Create a temporary parent window to ensure the dialog is always on top
+    parent = QMainWindow()
+    parent.setWindowFlags(Qt.WindowStaysOnTopHint)  # Ensure it's always on top
+    parent.setWindowTitle("Temporary Parent")
+    parent.resize(1, 1)  # Make the parent very small
+    parent.show()  # Show the parent window
+    parent.raise_()
+    parent.activateWindow()
+
+    # Create the custom dialog
+    dialog = QDialog(parent)
+    dialog.setWindowTitle("Input Dialog")
+    dialog.setWindowFlags(dialog.windowFlags() | Qt.WindowStaysOnTopHint)  # Always on top
+
+    # Set up the layout
+    layout = QVBoxLayout()
+
+    # Add the message label
+    label = QLabel(message)
+    layout.addWidget(label)
+
+    # Add the text input box
+    text_input = QLineEdit()
+    layout.addWidget(text_input)
+
+    # Add OK and Cancel buttons
+    button_layout = QHBoxLayout()
+    ok_button = QPushButton("OK")
+    cancel_button = QPushButton("Cancel")
+    button_layout.addWidget(ok_button)
+    button_layout.addWidget(cancel_button)
+    layout.addLayout(button_layout)
+
+    # Connect button actions
+    def on_ok():
+        dialog.accept()  # Accept the dialog and close it
+
+    def on_cancel():
+        dialog.reject()  # Reject the dialog and close it
+
+    ok_button.clicked.connect(on_ok)
+    cancel_button.clicked.connect(on_cancel)
+
+    # Set the layout for the dialog
+    dialog.setLayout(layout)
+
+    # Show the dialog and wait for user interaction
+    result = dialog.exec_()
+
+    # Clean up the parent window
+    parent.hide()
+    app.processEvents()
+    parent.close()
+    parent.deleteLater()
+
+    # Return the appropriate value based on user interaction
+    if result == QDialog.Accepted:
+        return text_input.text()  # Return the entered text if OK was clicked
+    else:
+        return None  # Return None if Cancel was clicked
+
+def quickPopupDropdown(message="Select an option:", options=("Option 1", "Option 2", "Option 3")):
+    """
+    Displays a popup dialog with a message, a dropdown menu, and OK/Cancel buttons.
+
+    Parameters:
+    - message (str): The message to display in the popup.
+    - options (list or tuple of str): A list or tuple of options to display in the dropdown.
+
+    Returns:
+    - int: The index of the selected option if OK is clicked.
+    - None: If Cancel is clicked.
+    """
+    from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QComboBox, QPushButton, QHBoxLayout, QMainWindow
+    from PyQt5.QtCore import Qt
+
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])  # Create a QApplication if it doesn't already exist
+
+    # Create a temporary parent window to ensure the dialog is always on top
+    parent = QMainWindow()
+    parent.setWindowFlags(Qt.WindowStaysOnTopHint)  # Ensure it's always on top
+    parent.setWindowTitle("Temporary Parent")
+    parent.resize(1, 1)  # Make the parent very small
+    parent.show()  # Show the parent window
+    parent.raise_()
+    parent.activateWindow()
+
+    # Create the custom dialog
+    dialog = QDialog(parent)
+    dialog.setWindowTitle("Dropdown Dialog")
+    dialog.setWindowFlags(dialog.windowFlags() | Qt.WindowStaysOnTopHint)  # Always on top
+
+    # Set up the layout
+    layout = QVBoxLayout()
+
+    # Add the message label
+    label = QLabel(message)
+    layout.addWidget(label)
+
+    # Add the dropdown box
+    dropdown = QComboBox()
+    dropdown.addItems(options)  # Populate the dropdown with options
+    layout.addWidget(dropdown)
+
+    # Add OK and Cancel buttons
+    button_layout = QHBoxLayout()
+    ok_button = QPushButton("OK")
+    cancel_button = QPushButton("Cancel")
+    button_layout.addWidget(ok_button)
+    button_layout.addWidget(cancel_button)
+    layout.addLayout(button_layout)
+
+    # Connect button actions
+    def on_ok():
+        dialog.accept()  # Accept the dialog and close it
+
+    def on_cancel():
+        dialog.reject()  # Reject the dialog and close it
+
+    ok_button.clicked.connect(on_ok)
+    cancel_button.clicked.connect(on_cancel)
+
+    # Set the layout for the dialog
+    dialog.setLayout(layout)
+
+    # Show the dialog and wait for user interaction
+    result = dialog.exec_()
+
+    # Properly clean up the parent window
+    parent.hide()  # Hide the parent window immediately
+    app.processEvents()  # Force event loop to process hiding
+    parent.close()  # Close the parent window
+    parent.deleteLater()  # Mark the parent for deletion
+
+    # Return the appropriate value based on user interaction
+    if result == QDialog.Accepted:
+        return dropdown.currentIndex()  # Return the index of the selected option
+    else:
+        return None  # Return None if Cancel was clicked
+
+def quickPopupCheckboxes(message="Select options:", options=("Option 1", "Option 2", "Option 3")):
+    """
+    Displays a popup dialog with a message, a series of checkboxes, and OK/Cancel buttons.
+
+    Parameters:
+    - message (str): The message to display in the popup.
+    - options (list or tuple of str): A list or tuple of options to display as checkboxes.
+
+    Returns:
+    - tuple: A tuple of indices of the checkboxes that are checked if OK is clicked.
+    - None: If Cancel is clicked.
+    """
+    from PyQt5.QtWidgets import (
+        QApplication,
+        QDialog,
+        QVBoxLayout,
+        QLabel,
+        QCheckBox,
+        QPushButton,
+        QHBoxLayout,
+        QMainWindow,
+    )
+    from PyQt5.QtCore import Qt
+
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])  # Create a QApplication if it doesn't already exist
+
+    # Create a temporary parent window to ensure the dialog is always on top
+    parent = QMainWindow()
+    parent.setWindowFlags(Qt.WindowStaysOnTopHint)  # Ensure it's always on top
+    parent.setWindowTitle("Temporary Parent")
+    parent.resize(1, 1)  # Make the parent very small
+    parent.show()  # Show the parent window
+    parent.raise_()
+    parent.activateWindow()
+
+    # Create the custom dialog
+    dialog = QDialog(parent)
+    dialog.setWindowTitle("Checkbox Dialog")
+    dialog.setWindowFlags(dialog.windowFlags() | Qt.WindowStaysOnTopHint)  # Always on top
+
+    # Set up the layout
+    layout = QVBoxLayout()
+
+    # Add the message label
+    label = QLabel(message)
+    layout.addWidget(label)
+
+    # Add checkboxes for each option
+    checkboxes = []
+    for option in options:
+        checkbox = QCheckBox(option)
+        layout.addWidget(checkbox)
+        checkboxes.append(checkbox)
+
+    # Add OK and Cancel buttons
+    button_layout = QHBoxLayout()
+    ok_button = QPushButton("OK")
+    cancel_button = QPushButton("Cancel")
+    button_layout.addWidget(ok_button)
+    button_layout.addWidget(cancel_button)
+    layout.addLayout(button_layout)
+
+    # Connect button actions
+    def on_ok():
+        dialog.accept()  # Accept the dialog and close it
+
+    def on_cancel():
+        dialog.reject()  # Reject the dialog and close it
+
+    ok_button.clicked.connect(on_ok)
+    cancel_button.clicked.connect(on_cancel)
+
+    # Set the layout for the dialog
+    dialog.setLayout(layout)
+
+    # Show the dialog and wait for user interaction
+    result = dialog.exec_()
+
+    # Properly clean up the parent window
+    parent.hide()  # Hide the parent window immediately
+    app.processEvents()  # Process any pending events
+    parent.close()  # Close the parent window
+    parent.deleteLater()  # Mark the parent for deletion
+
+    # Return the appropriate value based on user interaction
+    if result == QDialog.Accepted:
+        # Gather indices of checkboxes that are checked
+        checked_indices = tuple(i for i, checkbox in enumerate(checkboxes) if checkbox.isChecked())
+        return checked_indices
+    else:
+        return None  # Return None if Cancel was clicked
+
 def importFromPy(py_name, *args):
     """
     Load a function or other object from a Python file that is not in the CWD or library.
@@ -354,6 +729,7 @@ def importFromPy(py_name, *args):
     # Add to the global namespace
     import __main__
     for obj_name, obj in imported_objects.items():
+        # Check to make sure 
         if obj_name in dir(builtins) or keyword.iskeyword(obj_name):
             print(f"{obj_name} is a reserved keyword or built-in function name and will not be imported.")
         else:
@@ -361,115 +737,4 @@ def importFromPy(py_name, *args):
             print(f"Imported {obj_name}")
 
     return imported_objects
-
-
-# =============================================================================
-# def importFromPy(py_name, *args):
-#     """
-#     Load a function or other object from a Python file that is not in the CWD or library
-# 
-#     Parameters
-#     obj_name (str): the name of the function (or other object) that you would like to import
-#     py_name (str):   the name of the Python script from which you would like to import
-# 
-#     """
-#     from pathlib import Path
-#     from os import chdir
-#     import __main__
-#     import sys
-#     
-#     # Check to see if the user supplied the full file name or just the stem
-#     if '.py' not in py_name:
-#         filename = py_name + '.py'
-#     else:
-#         filename = py_name
-#         py_name = py_name.split('.')[0]
-#     print(args)
-#     # The user supplied at least one object to import.  Loop through the supplied objects
-#     for obj_name in args:
-#         print(obj_name)
-#         # Try to import.  This will just work if the py file is in the CWD, otherwise we'll have to look for it
-#         try:
-#             exec(f'from {py_name} import {obj_name}')  # import the function we want direct access to
-#         except (ModuleNotFoundError, ImportError):
-#             # Let the user know that we need to find the file
-#             quickPopupMessage(f'{filename} not found.  Please locate it using the file dialog.  Click OK to open the file dialog.')
-#             # Open the file dialog and limit it to only looking for the specified file
-#             path = quickOpenFilename(filetypes = filename)
-#             # Get the absolute path to the CWD then change to the location of the file
-#             current_path = Path('.').resolve()
-#             print(path.parent)
-#             print(path.exists())
-#             print(path.cwd())
-#             [print('*', p) for p in sys.path]
-#             chdir(path.parent)
-#             print(path.cwd())
-#             [print('*', p) for p in sys.path]
-#             # Import
-#             try:
-#                 exec(f'from {py_name} import {obj_name}')
-#             except ImportError:
-#                 quickPopupMessage(f'{obj_name} not found in {filename}!')
-#                 raise
-#             except ModuleNotFoundError:
-#                 quickPopupMessage(f'{py_name} not found!')
-#                 raise
-#             # Change back to the original CWD
-#             chdir(current_path)
-#             
-#         print(obj_name, locals()[obj_name])
-#         setattr(__main__, obj_name, locals()[obj_name])
-# 
-# =============================================================================
-
-def scientificNotation(number, precision = None, exponent = None):
-    from symbols import math, typography
-    
-    oldNumberString = f'{number:e}' # use the "e" to ensure it is always formatted with an e
-    oldCoefficient, oldExponent = oldNumberString.split('e') # get the coefficient and exponent from the old number string
-    oldCoefficient = float(oldCoefficient) # make sure we have a float for the coefficient
-    oldExponent = int(oldExponent) # make sure we have a string for the exponent
-    print(oldExponent)
-    
-    if exponent is not None:# this means there is a desired exponent... such as 10^6
-        sciExponent = exponent # set the scientific exponent to the desired exponent
-        sciCoefficient = oldCoefficient * 10**(oldExponent - exponent) # make sure we scale the coefficient by the different in the exponents.
-    else:
-        sciExponent = oldExponent
-        sciCoefficient = oldCoefficient
-    
-    if precision is not None: # his means we have a level of precision we want to report to
-        sciCoefficient = np.round(sciCoefficient, precision)
-    
-    supString = ''
-    for glyph in str(sciExponent): # go through glyph by glyph and assign the correct superscript
-        if glyph == '0':
-            supString = supString + typography.sup_0
-        elif glyph == '1':
-            supString = supString + typography.sup_1
-        elif glyph == '2':
-            supString = supString + typography.sup_2
-        elif glyph == '3':
-            supString = supString + typography.sup_3
-        elif glyph == '4':
-            supString = supString + typography.sup_4
-        elif glyph == '5':
-            supString = supString + typography.sup_5
-        elif glyph == '6':
-            supString = supString + typography.sup_6
-        elif glyph == '7':
-            supString = supString + typography.sup_7
-        elif glyph == '8':
-            supString = supString + typography.sup_8
-        elif glyph == '9':
-            supString = supString + typography.sup_9
-        elif glyph == '-':
-            supString = supString + typography.sup_minus
-        else:
-            pass
-        
-    formattedScientificNotation = f'{sciCoefficient}{math.times}10{supString}'
-    
-    return formattedScientificNotation
-
 
