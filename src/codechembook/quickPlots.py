@@ -406,7 +406,7 @@ def quickHist(x,
     # calculate a buffer based in iqr
     iqr_buffer = 0.05*iqr
     # take whatever is larger
-    buffer = max[bar_separation, iqr_buffer]
+    buffer = max([bar_separation, iqr_buffer])
 
     # now we can plot a bar chart that looks like a histogram...
     hist = make_subplots()
@@ -420,7 +420,7 @@ def quickHist(x,
     hist.update_traces(marker = dict(line = dict(width = 1, color = "black")))
     
     hist.update_xaxes(title = xlabel, range = [min(bar_centers) - buffer, max(bar_centers) + buffer])
-    hist.update_yaxes(title = ylabel, range = [0, max[bar_lengths]*0.02])
+    hist.update_yaxes(title = ylabel, range = [0, max(bar_lengths)*1.02])
     hist.update_layout(bargap = 0, template = template)
     
     process_output(hist, output)
