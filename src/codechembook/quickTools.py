@@ -144,13 +144,13 @@ def quickPlotCSV(file, cols = None, skip_header = 1, plotType = "scatter", xcol 
 
     return fig
 
-def quickOpenFilenames(title="Select files to open", initialdir='.', filetypes='All files, *.*', sort = True):
+def quickOpenFilenames(title="Select files to open", initialpath='.', filetypes='All files, *.*', sort = True):
     """
     Opens a file dialog to select multiple files, returning a sorted list of Path objects.
     
     Parameters:
     - title (str): The title of the file selection dialog window. Defaults to "Select files to open".
-    - initialdir (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
+    - initialpath (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
                                Accepts both Path objects and strings.
     - filetypes (str or iterable): The types of files to display in the dialog. Defaults to showing all files.
                          Should be a string in the format 'Description, *.extension' or a list/tuple of the same.
@@ -162,9 +162,9 @@ def quickOpenFilenames(title="Select files to open", initialdir='.', filetypes='
     from pathlib import Path
 
 
-    # Ensure initialdir is a string (if passed as a Path object)
-    if isinstance(initialdir, Path):
-        initialdir = str(initialdir)
+    # Ensure initialpath is a string (if passed as a Path object)
+    if isinstance(initialpath, Path):
+        initialpath = str(initialpath)
         
     # If we got a list of file types, reformat it for getOpenFileName as a string with ';;' between entries
     if isinstance(filetypes, list):
@@ -179,7 +179,7 @@ def quickOpenFilenames(title="Select files to open", initialdir='.', filetypes='
     parent = QMainWindow()
     parent.hide()  # Ensure the parent window is hidden
     
-    filepaths, _ = QFileDialog.getOpenFileNames(None, title, initialdir, filetypes)
+    filepaths, _ = QFileDialog.getOpenFileNames(None, title, initialpath, filetypes)
     
     # Close and clean up the parent window
     parent.close()
@@ -190,26 +190,26 @@ def quickOpenFilenames(title="Select files to open", initialdir='.', filetypes='
 
     return [Path(filepath) for filepath in filepaths]
 
-def quickOpenFilename(title="Select file to open", initialdir='.', filetypes='All files, *.*'):
+def quickOpenFilename(title="Select file to open", initialpath='.', filetypes='All files, *.*'):
     """
     Opens a file dialog to select multiple files, returning a sorted list of Path objects.
     
     Parameters:
     - title (str): The title of the file selection dialog window. Defaults to "Select files to open".
-    - initialdir (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
+    - initialpath (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
                                Accepts both Path objects and strings.
     - filetypes (str or iterable): The types of files to display in the dialog. Defaults to showing all files.
                          Should be a string in the format 'Description, *.extension' or a list/tuple of the same.
     
     Returns:
-    - Path: A Path object.
+    - Path or None: A Path object unless "Cancel" is clicked.
     """
     from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
     from pathlib import Path
 
-    # Ensure initialdir is a string (if passed as a Path object)
-    if isinstance(initialdir, Path):
-        initialdir = str(initialdir)
+    # Ensure initialpath is a string (if passed as a Path object)
+    if isinstance(initialpath, Path):
+        initialpath = str(initialpath)
         
     # If we got a list of file types, reformat it for getOpenFileName as a string with ';;' between entries
     if isinstance(filetypes, list):
@@ -224,21 +224,21 @@ def quickOpenFilename(title="Select file to open", initialdir='.', filetypes='Al
     parent = QMainWindow()
     parent.hide()  # Ensure the parent window is hidden
     
-    filepath, _ = QFileDialog.getOpenFileName(None, title, initialdir, filetypes)
+    filepath, _ = QFileDialog.getOpenFileName(None, title, initialpath, filetypes)
     
     # Close and clean up the parent window
     parent.close()
     parent.deleteLater()
     
-    return Path(filepath)
+    return Path(filepath) if filepath != '' else None
 
-def quickSelectFolder(title="Select folder", initialdir="."):
+def quickSelectFolder(title="Select folder", initialpath="."):
     """
     Opens a folder selection dialog, returning the selected folder as a Path object.
 
     Parameters:
     - title (str): The title of the folder selection dialog window. Defaults to "Select folder".
-    - initialdir (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
+    - initialpath (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
                                 Accepts both Path objects and strings.
 
     Returns:
@@ -247,9 +247,9 @@ def quickSelectFolder(title="Select folder", initialdir="."):
     from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
     from pathlib import Path
 
-    # Ensure initialdir is a string (if passed as a Path object)
-    if isinstance(initialdir, Path):
-        initialdir = str(initialdir)
+    # Ensure initialpath is a string (if passed as a Path object)
+    if isinstance(initialpath, Path):
+        initialpath = str(initialpath)
 
     # Ensure QApplication instance exists
     app = QApplication.instance()
@@ -261,7 +261,7 @@ def quickSelectFolder(title="Select folder", initialdir="."):
     parent.hide()  # Ensure the parent window is hidden
 
     # Open the folder selection dialog with the hidden parent
-    folderpath = QFileDialog.getExistingDirectory(parent, title, initialdir)
+    folderpath = QFileDialog.getExistingDirectory(parent, title, initialpath)
 
     # Close and clean up the parent window
     parent.close()
@@ -271,13 +271,13 @@ def quickSelectFolder(title="Select folder", initialdir="."):
     return Path(folderpath) if folderpath else None
 
 def quickSaveFilename(title="Choose or create a filename to save", 
-                      initialdir='.', filetypes='All files, *.*'):
+                      initialpath='.', filetypes='All files, *.*'):
     """
     Opens a file dialog to choose a filename for saving, returns a Path object.
 
     Parameters:
     - title (str): The title of the file selection dialog window. Defaults to "Define file to save".
-    - initialdir (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
+    - initialpath (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
                                 Accepts both Path objects and strings.
     - filetypes (str or iterable): The types of files to display in the dialog. Defaults to showing all files.
                                    Should be a string in the format 'Description, *.extension' or a list/tuple of the same.
@@ -288,22 +288,25 @@ def quickSaveFilename(title="Choose or create a filename to save",
     from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
     from pathlib import Path
 
-    # Ensure initialdir is a string (if passed as a Path object)
-    if isinstance(initialdir, Path):
-        initialdir = str(initialdir)
+    # Ensure initialpath is a string (if passed as a Path object)
+    if isinstance(initialpath, Path):
+        initialpath = str(initialpath)
         
     # If we got a list of file types, reformat it for getSaveFileName as a string with ';;' between entries
     if isinstance(filetypes, list):
         filetypes = ';;'.join(filetypes)
     
-    app = QApplication.instance() or QApplication([])  # Ensure QApplication exists
+    # Ensure QApplication instance exists
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])
 
     # Create a temporary hidden parent window
     parent = QMainWindow()
     parent.hide()  # Do not display the window
 
     # Open the file dialog with the temporary parent
-    filepath, _ = QFileDialog.getSaveFileName(parent, title, initialdir, filetypes)
+    filepath, _ = QFileDialog.getSaveFileName(parent, title, initialpath, filetypes)
 
     # Close the temporary parent window
     parent.close()
