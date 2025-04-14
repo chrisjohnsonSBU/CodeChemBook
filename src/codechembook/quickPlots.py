@@ -307,17 +307,32 @@ def quickScatter(x = None, y = None, xlabel = None, ylabel = None, name = None, 
     # next, let us ensure we can iterate through x and y together
     if len(xplot) == 1:
         xplot = [xplot[0]]*len(yplot)
-    elif len(xplot) != len(yplot):
+    elif len(xplot) != len(yplot): # both are already long lists that don't match.
         raise "your x values should be a list of length equal to y values, or a list of 1"
     
     # start the plotting
     qplot = make_subplots()
     if name is None:
         name = ['' for x in xplot]
+    elif isinstance(name, str):
+        name = [name]
     if mode is None:
         mode = [None for x in xplot]
+    elif isinstance(mode, str):
+        mode = [mode for x in xplot]
+    elif isinstance(mode, list) and len(mode) == 1:
+        mode = [mode[0] for x in xplot]
+
+    # now everything is a list
+    try:
+        zip(yplot, name, mode):
+    except:
+        if len(yplot) != len(name):
+            raise f"The name keyword needs a string (for one y trace) or a list that is the same length as the number of y traces.\nYou passed {len(yplot)} traces but {len(name)} names."
+        if len(yplot) != len(mode):
+            raise f"The mode keyword needs a string (to apply the same mode to all traces) or a list that is the same length as the number of y traces.\nYou passed {len(yplot)} traces but {len(mode)} names."    
+
     for xi,yi,ni,mi in zip(xplot, yplot, name, mode):
-        print(mi)
         if len(xi) != len(yi):
             raise "you do not have the same number of x and y points!"
         if mi is None:
