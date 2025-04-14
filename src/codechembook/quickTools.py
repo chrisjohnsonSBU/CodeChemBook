@@ -1,5 +1,20 @@
 # some tools for handling opening and plotting....
 import numpy as np
+from codechembook.chemformula import ChemFormula
+
+# make separate wrappers for latex, html, unicode, 
+# copy in the library
+
+def quickHTMLFormula(formula, charge = 0, name = None, cas = None):
+    return ChemFormula(formula, charge = charge, name = name, cas = cas).html.replace("<span class='ChemFormula'>", "").replace("</span>", "")
+
+def quickLatexFormula(formula, charge = 0, name = None, cas = None):
+    return ChemFormula(formula, charge = charge, name = name, cas = cas).latex
+
+def quickUnicodeFormula(formula, charge = 0, name = None, cas = None):
+    return ChemFormula(formula, charge = charge, name = name, cas = cas).unicode
+
+
 
 def quickReadCSV(file = None, cols = None, delimiter = ",", skip_header = 1):
     '''
