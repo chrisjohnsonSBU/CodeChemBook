@@ -267,13 +267,14 @@ def quickScatter(x = None, y = None, xlabel = None, ylabel = None, name = None, 
     Quickly plot one xy trace in plotly.
 
     Optional Args:
-        x (ndarray or list of ndarray): the x coordinates to plot
-        y (ndarray or list of ndarray): the y coordinates to plot
-        xlabel (string):                x axis title
-        ylabel (string):                y axis title
-        mode (string):                  plot using 'lines'(default) or 'markers'
-        template (string):              which plotly template to use (default simple_white)
-        show (string):                  output to Spyder plot window ('png', 'svg')
+        x (ndarray or list of ndarray):  the x coordinates to plot
+        y (ndarray or list of ndarray):  the y coordinates to plot
+        xlabel (string):                 x axis title
+        ylabel (string):                 y axis title
+        name (string or list of string): the name of the trace(s) to appear on hover or in the legend
+        mode (string or list of string): plot using 'lines'(default) or 'markers'
+        template (string):               which plotly template to use (default simple_white)
+        output (string):                 output to Spyder plot window ('png', 'svg')
                                            or browser ('browser')
                                            or the 'normal' show behavior ('default')
                                            or 'None' for no output
@@ -303,7 +304,7 @@ def quickScatter(x = None, y = None, xlabel = None, ylabel = None, name = None, 
         except:
             raise "You need to supply a list or array of floats or ints"
     
-    #next, let us ensure we can iterate through x and y together
+    # next, let us ensure we can iterate through x and y together
     if len(xplot) == 1:
         xplot = [xplot[0]]*len(yplot)
     elif len(xplot) != len(yplot):
@@ -313,13 +314,16 @@ def quickScatter(x = None, y = None, xlabel = None, ylabel = None, name = None, 
     qplot = make_subplots()
     if name is None:
         name = ['' for x in xplot]
-    for xi,yi,ni in zip(xplot, yplot, name):
+    if mode is None:
+        mode = [None for x in xplot]
+    for xi,yi,ni,mi in zip(xplot, yplot, name, mode):
+        print(mi)
         if len(xi) != len(yi):
             raise "you do not have the same number of x and y points!"
-        if mode is None:
+        if mi is None:
             points = go.Scatter(x=xi, y = yi, name = ni)
-        elif "lines" in mode or "markers" in mode:
-            points = go.Scatter(x=xi, y = yi, mode = mode, name = ni)
+        elif "lines" in mode or "markers" in mi:
+            points = go.Scatter(x=xi, y = yi, mode = mi, name = ni)
         else:
             raise "please enter either 'lines', 'markers', 'lines+markers', or None for mode"
         qplot.add_trace(points)
