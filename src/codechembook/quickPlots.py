@@ -325,7 +325,7 @@ def quickScatter(x = None, y = None, xlabel = None, ylabel = None, name = None, 
 
     # now everything is a list
     try:
-        zip(yplot, name, mode):
+        zip(yplot, name, mode)
     except:
         if len(yplot) != len(name):
             raise f"The name keyword needs a string (for one y trace) or a list that is the same length as the number of y traces.\nYou passed {len(yplot)} traces but {len(name)} names."
