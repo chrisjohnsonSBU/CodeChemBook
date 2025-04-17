@@ -34,6 +34,23 @@ def process_output(plot, output):
         print("Enter 'png' to plot in Spyder or 'browser' for the browser.")
         print("Use 'None' to show nothing and return the figure object.")
 
+def sampleColorScale(num_colors, color_scale = 'bluered'):
+    '''
+    Create a color scale with a given number of colors from a continuous color scale.
+    Useful for plotting multiple traces with an inferred ordering or sequencing.
+    See https://plotly.com/python/builtin-colorscales/ for options
+
+    Required Args:
+    num_colors (int): the number of colors needed (usually number of traces)
+
+    Optional Args:
+    color_scale (string): the name of the continuous color scale to sample.
+    '''
+    from plotly.express.colors import sample_colorscale 
+    
+    colors = sample_colorscale(color_scale, [i / (num_colors - 1) for i in range(num_colors)])
+    return colors
+
 def quickGrid(x = None, labels = None, template = "simple_white", output = "png"):
     '''
     Takes a series of array and plots correlation between them...
