@@ -553,7 +553,7 @@ def plotFit(fit,
         for comp in comps:
             fig.add_scatter(x = smoothx, 
                             y = comps[comp], 
-                            line = {'dash': 'dot', 'color':'grey'},
+                            line = {'dash': 'dot', 'color':'red'},
                             row = 1, col = 1) 
     
     # Plot the raw data
@@ -562,8 +562,8 @@ def plotFit(fit,
                     mode = 'markers', 
                     name = 'Data', 
                     legendrank = 1, 
-                    marker = {'color': 'blue', 'size': 8},
-                    line = {'color': 'blue', 'width' : 8},
+                    marker = {'color': 'black', 'size': 8},
+                    line = {'color': 'black', 'width' : 8},
                     row = 1, col = 1)
 
     # Plot the fit curve
@@ -581,8 +581,8 @@ def plotFit(fit,
                         y = -1*fit.residual, # we need to multiply this by -1, to get the 'expected' behavior of data - fit. 
                         mode = 'markers+lines', 
                         name = 'Residual', 
-                        line = {'color': 'black', 'width':1},
-                        marker = {'color': 'black', 'size':2},
+                        line = {'color': 'red', 'width':1},
+                        marker = {'color': 'red', 'size':2},
                         showlegend = False,
                         row = 2, col = 1)
         
@@ -592,12 +592,12 @@ def plotFit(fit,
             fig.add_scatter(x = smoothx, 
                             y = confidence * fit.eval_uncertainty(**kwargs), 
                             mode = 'lines',
-                            line = {'color': 'gray', 'width': 0},
+                            line = {'color': 'lightpink', 'width': 0},
                             row = 2, col = 1)
             fig.add_scatter(x = smoothx, 
                             y = -1 * confidence * fit.eval_uncertainty(**kwargs), 
                             mode = 'lines',
-                            line = {'color': 'gray', 'width': 0},
+                            line = {'color': 'lightpink', 'width': 0},
                             row = 2, col = 1,
                             fill = 'tonexty')
         # Limit the ticks on the Residual axis so that it is readable
