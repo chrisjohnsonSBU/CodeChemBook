@@ -471,8 +471,7 @@ def plotFit(fit,
             xlabel = None, 
             ylabel = None, 
             template = 'simple_white',
-            output = 'png',
-            colors = 'greys'):
+            output = 'png'):
     """
     Plot the result of a 1d fit using lmfit
     
@@ -489,7 +488,6 @@ def plotFit(fit,
         xlabel (string):   x axis title (default: None)
         ylabel (string):   y axis title (default: None)
         template (string): which plotly template to use (default: 'simple_white')
-        colors (string):   color scheme to use (default: 'greys')
         output (string):   output to Spyder plot window ('png', default) 
                            or browser ('browser')
                            or None for no output
@@ -537,12 +535,12 @@ def plotFit(fit,
         fig.add_scatter(x = smoothx, 
                         y = smoothy + confidence * fit.eval_uncertainty(**kwargs), 
                         mode = 'lines',
-                        line = {'color': 'gray', 'width': 0},
+                        line = {'color': 'lightpink', 'width': 0},
                         row = 1, col = 1)
         fig.add_scatter(x = smoothx, 
                         y = smoothy - confidence * fit.eval_uncertainty(**kwargs), 
                         mode = 'lines',
-                        line = {'color': 'gray', 'width': 0},
+                        line = {'color': 'lightpink', 'width': 0},
                         row = 1, col = 1,
                         fill = 'tonexty')
     
@@ -564,8 +562,8 @@ def plotFit(fit,
                     mode = 'markers', 
                     name = 'Data', 
                     legendrank = 1, 
-                    marker = {'color': 'rgb(180,180,180)', 'size': 8},
-                    line = {'color': 'rgb(180,180,180)', 'width' : 8},
+                    marker = {'color': 'blue', 'size': 8},
+                    line = {'color': 'blue', 'width' : 8},
                     row = 1, col = 1)
 
     # Plot the fit curve
@@ -574,7 +572,7 @@ def plotFit(fit,
                     mode = 'lines', 
                     name = 'Best Fit', 
                     legendrank = 2, 
-                    line = {'color': 'black'},
+                    line = {'color': 'red'},
                     row = 1, col = 1)
 
     # If we are doing residuals, plot the residual
