@@ -5,16 +5,47 @@ from codechembook.chemformula import ChemFormula
 # make separate wrappers for latex, html, unicode, 
 # copy in the library
 
-def quickHTMLFormula(formula, charge = 0, name = None, cas = None):
-    return ChemFormula(formula, charge = charge, name = name, cas = cas).html.replace("<span class='ChemFormula'>", "").replace("</span>", "")
+def quickHTMLFormula(formula, charge = 0, name = None, CAS = None):
+    '''
+    Outputs a properly formatted chemical formula for use in HTML contexts
 
-def quickLatexFormula(formula, charge = 0, name = None, cas = None):
-    return ChemFormula(formula, charge = charge, name = name, cas = cas).latex
+    Required Args:
+    formula (string): an unformatted chemical formula, without charge
 
-def quickUnicodeFormula(formula, charge = 0, name = None, cas = None):
-    return ChemFormula(formula, charge = charge, name = name, cas = cas).unicode
+    Optional Args:
+    charge (int):  the charge of the compound (default: 0)
+    name (string): the name of the compound (default: None)
+    CAS (string):  the CAS number (default: None)
+    '''
+    return ChemFormula(formula, charge = charge, name = name, cas = CAS).html.replace("<span class='ChemFormula'>", "").replace("</span>", "")
 
+def quickLatexFormula(formula, charge = 0, name = None, CAS = None):
+    '''
+    Outputs a properly formatted chemical formula for use in Latex contexts
 
+    Required Args:
+    formula (string): an unformatted chemical formula, without charge
+
+    Optional Args:
+    charge (int):  the charge of the compound (default: 0)
+    name (string): the name of the compound (default: None)
+    CAS (string):  the CAS number (default: None)
+    '''
+    return ChemFormula(formula, charge = charge, name = name, cas = CAS).latex
+
+def quickUnicodeFormula(formula, charge = 0, name = None, CAS = None):
+    '''
+    Outputs a properly formatted chemical formula for use in unicode
+
+    Required Args:
+    formula (string): an unformatted chemical formula, without charge
+
+    Optional Args:
+    charge (int):  the charge of the compound (default: 0)
+    name (string): the name of the compound (default: None)
+    CAS (string):  the CAS number (default: None)
+    '''
+    return ChemFormula(formula, charge = charge, name = name, cas = CAS).unicode
 
 def quickReadCSV(file = None, cols = None, delimiter = ",", skip_header = 1):
     '''
