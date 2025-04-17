@@ -35,7 +35,22 @@ double_prime = '\u2033'  # ″ double prime
 permille = '\u2030'  # ‰ per mille
 plus_minus = '\u00B1'  # ± plus/minus symbol
 
-
+# Subscript symbols
+sub_0 = '\u2080'  # ₀ subscript 0
+sub_1 = '\u2081'  # ₁ subscript 1
+sub_2 = '\u2082'  # ₂ subscript 2
+sub_3 = '\u2083'  # ₃ subscript 3
+sub_4 = '\u2084'  # ₄ subscript 4
+sub_5 = '\u2085'  # ₅ subscript 5
+sub_6 = '\u2086'  # ₆ subscript 6
+sub_7 = '\u2087'  # ₇ subscript 7
+sub_8 = '\u2088'  # ₈ subscript 8
+sub_9 = '\u2089'  # ₉ subscript 9
+sub_plus = '\u208A'  # ₊ subscript +
+sub_minus = '\u208B'  # ₋ subscript –
+sub_left_paren = '\u208D'  # ₍ subscript (
+sub_right_paren = '\u208E'  # ₎ subscript )
+sub_equal = '\u208C'  # ₌ subscript equals
 
 # Superscript symbols
 sup_0: str = '\u2070'  # ⁰ superscript 0
@@ -81,6 +96,26 @@ sup_W: str = '\u1d48'  # ʷ superscript W
 sup_X: str = '\u1d49'  # ˣ superscript X
 sup_Y: str = '\u1d4a'  # ʸ superscript Y
 sup_Z: str = '\u1d4b'  # ᶻ superscript Z
+
+# Subscript lowercase letters
+
+sub_a = '\u2090'  # ₐ subscript a
+sub_e = '\u2091'  # ₑ subscript b
+sub_h = '\u2095'  # ₕ subscript h
+sub_i = '\u1d62'  # ᵢ subscript i
+sub_j = '\u2c7c'  # ⱼ subscript j
+sub_k = '\u2096'  # ₖ subscript k
+sub_l = '\u2097'  # ₗ subscript l
+sub_m = '\u2098'  # ₘ subscript m
+sub_n = '\u2099'  # ₙ subscript n
+sub_o = '\u2092'  # ₒ subscript o
+sub_p = '\u209a'  # ₚ subscript p
+sub_r = '\u1d63'  # ᵣ subscript r
+sub_s = '\u209b'  # ₛ subscript s
+sub_t = '\u209c'  # ₜ subscript t
+sub_u = '\u1d64'  # ᵤ subscript u
+sub_v = '\u1d65'  # ᵥ subscript v
+sub_x = '\u2093'  # ₓ subscript x
 
 # Superscript lowercase letters
 sup_a: str = '\u1d43'  # ᵃ superscript a
