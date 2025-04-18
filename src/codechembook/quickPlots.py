@@ -267,49 +267,7 @@ def customColorList(num_colors,
     
     return color_list
 
-def sampleCustomColorScale(anchor_colors, #css names, or string of hex color
-                    n_points, # number of data points to get colors for
-                    ):
-    from matplotlib import colors as mcolors # for translating colors
 
-    """
-    Generate a gradient of n_points between given colors.
-    
-    Parameters:
-        color_list (list): List of colors (CSS name, hex, RGB(A) tuple)
-        n_points (int): Number of colors to generate in the gradient
-    
-    Returns:
-        list of tuples: Interpolated colors as RGBA tuples
-    """
-    # Convert all colors to RGBA (normalized to 0–1)
-    rgba_colors = [mcolors.to_rgba(c) for c in anchor_colors]
-
-    # Create an array for interpolation
-    color_array = np.array(rgba_colors)
-
-    # How many segments to interpolate between
-    n_segments = len(anchor_colors) - 1
-
-    # Evenly space the desired number of points across the segments
-    segment_positions = np.linspace(0, n_segments, n_points)
-
-    # Interpolate each channel (R, G, B, A) separately
-    r_interp = np.interp(segment_positions, np.arange(len(anchor_colors)), color_array[:, 0])
-    g_interp = np.interp(segment_positions, np.arange(len(anchor_colors)), color_array[:, 1])
-    b_interp = np.interp(segment_positions, np.arange(len(anchor_colors)), color_array[:, 2])
-    a_interp = np.interp(segment_positions, np.arange(len(anchor_colors)), color_array[:, 3])
-
-    # Combine into a list of RGBA tuples
-    
-    raw_rgba = list(zip(r_interp, g_interp, b_interp, a_interp))
-    
-    return [# list of strings of rgba values
-            f"rgba({int(r*255)}, {int(g*255)}, {int(b*255)}, {round(a, 3)})"
-            for r, g, b, a in raw_rgba
-        ]
-
-####  delete down to here
     
     
 
