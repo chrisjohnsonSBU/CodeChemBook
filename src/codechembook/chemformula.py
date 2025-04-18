@@ -1,5 +1,5 @@
 import re
-import elements
+from . import elements
 import casregnum
 from collections import defaultdict
 

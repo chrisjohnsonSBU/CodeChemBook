@@ -46,7 +46,6 @@ def integrateRange(y, x, limits, method='trapezoid'):
             print('Please choose rectangle, trapezoid, or simpson')
         return spi.trapezoid(y[integ_range], x[integ_range])
     
-
 def maxInRange(x, y, limits):
     """
     Find the maximum value in a subset of y data points of a 1D collection set 
