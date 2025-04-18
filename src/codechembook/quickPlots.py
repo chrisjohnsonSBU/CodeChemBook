@@ -34,11 +34,29 @@ def process_output(plot, output):
         print("Enter 'png' to plot in Spyder or 'browser' for the browser.")
         print("Use 'None' to show nothing and return the figure object.")
 
+def sampleColorScale(num_colors, color_scale = 'bluered', mid_value = None):
+    '''
+    Create a color scale with a given number of colors from a continuous color scale.
+    Useful for plotting multiple traces with an inferred ordering or sequencing.
+    See https://plotly.com/python/builtin-colorscales/ for options
 
+    Required Args:
+    num_colors (int): the number of colors needed (usually number of traces)
 
-from plotly.colors import make_colorscale, convert_colors_to_same_type
+    Optional Args:
+    color_scale (string): the name of the continuous color scale to sample.
+    '''
+    
+    from plotly.express.colors import sample_colorscale 
+    
+    colors = sample_colorscale(color_scale, [i / (num_colors - 1) for i in range(num_colors)])
+    
+    return colors
+    
+def customColorScale(colors, scale=None): # continuous color scale for use in plotly
+    from plotly.colors import convert_colors_to_same_type
 
-css_color_dict = {
+    css_color_dict = {
     "aliceblue": "#f0f8ff",
     "antiquewhite": "#faebd7",
     "aqua": "#00ffff",
@@ -187,29 +205,8 @@ css_color_dict = {
     "whitesmoke": "#f5f5f5",
     "yellow": "#ffff00",
     "yellowgreen": "#9acd32"
-}
+    }
 
-def sampleColorScale(num_colors, color_scale = 'bluered', mid_value = None):
-    '''
-    Create a color scale with a given number of colors from a continuous color scale.
-    Useful for plotting multiple traces with an inferred ordering or sequencing.
-    See https://plotly.com/python/builtin-colorscales/ for options
-
-    Required Args:
-    num_colors (int): the number of colors needed (usually number of traces)
-
-    Optional Args:
-    color_scale (string): the name of the continuous color scale to sample.
-    '''
-    
-    from plotly.express.colors import sample_colorscale 
-    
-    colors = sample_colorscale(color_scale, [i / (num_colors - 1) for i in range(num_colors)])
-    
-    return colors
-    
-
-def customColorScale(colors, scale=None): # continuous color scale for use in plotly
     print("starting customColorScale function")
     translated_colors = []
     for c in colors:
@@ -241,7 +238,6 @@ def customColorScale(colors, scale=None): # continuous color scale for use in pl
     
     return color_scale
 
-
 def customColorList(num_colors, 
                   colors = 'bluered', # either a string or a list of colors
                   reverse = False, 
@@ -253,7 +249,7 @@ def customColorList(num_colors,
         color_list = sampleColorScale(num_colors, color_scale = colors)    
     elif isinstance(colors, list): # specifying a custom scale
         if perceptual:
-            raise "perceptual is not yet implimented"
+            raise "perceptual is not yet implemented"
         else:
             if isinstance(colors[0], list) and len(colors[0])==2: # expect sublists of color and position
                 colors_to_pass = []
@@ -270,12 +266,6 @@ def customColorList(num_colors,
             color_list = sampleColorScale(num_colors, color_scale = custom_color_scale)    
     
     return color_list
-
-
-
-# I think we can delete this down to quickGrid
-
-
 
 def sampleCustomColorScale(anchor_colors, #css names, or string of hex color
                     n_points, # number of data points to get colors for
