@@ -34,6 +34,270 @@ def process_output(plot, output):
         print("Enter 'png' to plot in Spyder or 'browser' for the browser.")
         print("Use 'None' to show nothing and return the figure object.")
 
+def sampleColorScale(num_colors, color_scale = 'bluered', mid_value = None):
+    '''
+    Create a color scale with a given number of colors from a continuous color scale.
+    Useful for plotting multiple traces with an inferred ordering or sequencing.
+    See https://plotly.com/python/builtin-colorscales/ for options
+
+    Required Args:
+    num_colors (int): the number of colors needed (usually number of traces)
+
+    Optional Args:
+    color_scale (string): the name of the continuous color scale to sample.
+    '''
+    
+    from plotly.express.colors import sample_colorscale 
+    
+    colors = sample_colorscale(color_scale, [i / (num_colors - 1) for i in range(num_colors)])
+    
+    return colors
+    
+def customColorScale(colors, scale=None): # continuous color scale for use in plotly
+    from plotly.colors import convert_colors_to_same_type
+
+    css_color_dict = {
+    "aliceblue": "#f0f8ff",
+    "antiquewhite": "#faebd7",
+    "aqua": "#00ffff",
+    "aquamarine": "#7fffd4",
+    "azure": "#f0ffff",
+    "beige": "#f5f5dc",
+    "bisque": "#ffe4c4",
+    "black": "#000000",
+    "blanchedalmond": "#ffebcd",
+    "blue": "#0000ff",
+    "blueviolet": "#8a2be2",
+    "brown": "#a52a2a",
+    "burlywood": "#deb887",
+    "cadetblue": "#5f9ea0",
+    "chartreuse": "#7fff00",
+    "chocolate": "#d2691e",
+    "coral": "#ff7f50",
+    "cornflowerblue": "#6495ed",
+    "cornsilk": "#fff8dc",
+    "crimson": "#dc143c",
+    "cyan": "#00ffff",
+    "darkblue": "#00008b",
+    "darkcyan": "#008b8b",
+    "darkgoldenrod": "#b8860b",
+    "darkgray": "#a9a9a9",
+    "darkgreen": "#006400",
+    "darkgrey": "#a9a9a9",
+    "darkkhaki": "#bdb76b",
+    "darkmagenta": "#8b008b",
+    "darkolivegreen": "#556b2f",
+    "darkorange": "#ff8c00",
+    "darkorchid": "#9932cc",
+    "darkred": "#8b0000",
+    "darksalmon": "#e9967a",
+    "darkseagreen": "#8fbc8f",
+    "darkslateblue": "#483d8b",
+    "darkslategray": "#2f4f4f",
+    "darkslategrey": "#2f4f4f",
+    "darkturquoise": "#00ced1",
+    "darkviolet": "#9400d3",
+    "deeppink": "#ff1493",
+    "deepskyblue": "#00bfff",
+    "dimgray": "#696969",
+    "dimgrey": "#696969",
+    "dodgerblue": "#1e90ff",
+    "firebrick": "#b22222",
+    "floralwhite": "#fffaf0",
+    "forestgreen": "#228b22",
+    "fuchsia": "#ff00ff",
+    "gainsboro": "#dcdcdc",
+    "ghostwhite": "#f8f8ff",
+    "gold": "#ffd700",
+    "goldenrod": "#daa520",
+    "gray": "#808080",
+    "green": "#008000",
+    "greenyellow": "#adff2f",
+    "grey": "#808080",
+    "honeydew": "#f0fff0",
+    "hotpink": "#ff69b4",
+    "indianred": "#cd5c5c",
+    "indigo": "#4b0082",
+    "ivory": "#fffff0",
+    "khaki": "#f0e68c",
+    "lavender": "#e6e6fa",
+    "lavenderblush": "#fff0f5",
+    "lawngreen": "#7cfc00",
+    "lemonchiffon": "#fffacd",
+    "lightblue": "#add8e6",
+    "lightcoral": "#f08080",
+    "lightcyan": "#e0ffff",
+    "lightgoldenrodyellow": "#fafad2",
+    "lightgray": "#d3d3d3",
+    "lightgreen": "#90ee90",
+    "lightgrey": "#d3d3d3",
+    "lightpink": "#ffb6c1",
+    "lightsalmon": "#ffa07a",
+    "lightseagreen": "#20b2aa",
+    "lightskyblue": "#87cefa",
+    "lightslategray": "#778899",
+    "lightslategrey": "#778899",
+    "lightsteelblue": "#b0c4de",
+    "lightyellow": "#ffffe0",
+    "lime": "#00ff00",
+    "limegreen": "#32cd32",
+    "linen": "#faf0e6",
+    "magenta": "#ff00ff",
+    "maroon": "#800000",
+    "mediumaquamarine": "#66cdaa",
+    "mediumblue": "#0000cd",
+    "mediumorchid": "#ba55d3",
+    "mediumpurple": "#9370db",
+    "mediumseagreen": "#3cb371",
+    "mediumslateblue": "#7b68ee",
+    "mediumspringgreen": "#00fa9a",
+    "mediumturquoise": "#48d1cc",
+    "mediumvioletred": "#c71585",
+    "midnightblue": "#191970",
+    "mintcream": "#f5fffa",
+    "mistyrose": "#ffe4e1",
+    "moccasin": "#ffe4b5",
+    "navajowhite": "#ffdead",
+    "navy": "#000080",
+    "oldlace": "#fdf5e6",
+    "olive": "#808000",
+    "olivedrab": "#6b8e23",
+    "orange": "#ffa500",
+    "orangered": "#ff4500",
+    "orchid": "#da70d6",
+    "palegoldenrod": "#eee8aa",
+    "palegreen": "#98fb98",
+    "paleturquoise": "#afeeee",
+    "palevioletred": "#db7093",
+    "papayawhip": "#ffefd5",
+    "peachpuff": "#ffdab9",
+    "peru": "#cd853f",
+    "pink": "#ffc0cb",
+    "plum": "#dda0dd",
+    "powderblue": "#b0e0e6",
+    "purple": "#800080",
+    "rebeccapurple": "#663399",
+    "red": "#ff0000",
+    "rosybrown": "#bc8f8f",
+    "royalblue": "#4169e1",
+    "saddlebrown": "#8b4513",
+    "salmon": "#fa8072",
+    "sandybrown": "#f4a460",
+    "seagreen": "#2e8b57",
+    "seashell": "#fff5ee",
+    "sienna": "#a0522d",
+    "silver": "#c0c0c0",
+    "skyblue": "#87ceeb",
+    "slateblue": "#6a5acd",
+    "slategray": "#708090",
+    "slategrey": "#708090",
+    "snow": "#fffafa",
+    "springgreen": "#00ff7f",
+    "steelblue": "#4682b4",
+    "tan": "#d2b48c",
+    "teal": "#008080",
+    "thistle": "#d8bfd8",
+    "tomato": "#ff6347",
+    "turquoise": "#40e0d0",
+    "violet": "#ee82ee",
+    "wheat": "#f5deb3",
+    "white": "#ffffff",
+    "whitesmoke": "#f5f5f5",
+    "yellow": "#ffff00",
+    "yellowgreen": "#9acd32"
+    }
+
+    translated_colors = []
+    for c in colors:
+        if isinstance(c, str):
+            if c.startswith("rgb") or c.startswith("#"): # may need to handle rgba separately
+                translated_colors.append(c)
+            elif c in css_color_dict.keys():
+                translated_colors.append(css_color_dict[c])
+            else:
+                raise "You supplied a color incorrectly."
+        else:
+            translated_colors.append(c)
+                
+    if scale is None:
+        scale = list(np.linspace(0,1,len(colors)))
+    
+    print(f"inside customColorScale: colors_to_pass = {translated_colors}, scale = {scale}")
+    
+    # get the formatted colors and scales
+    temp_scale = convert_colors_to_same_type(
+        translated_colors, 
+        scale = scale,
+        colortype = "rgb")
+    
+    # restructuring this object to be a properly formatted color scale
+    color_scale = []
+    for color, position in zip(temp_scale[0], temp_scale[1]):
+        color_scale.append([position, color])
+    
+    return color_scale
+
+def customColorList(num_colors, # the number of colors you want in the list
+                  colors = 'bluered', # either a string or a list of colors
+                  reverse = False, 
+                  perceptual = False, # eventually a flag for this
+                  as_string = True, # controls the output
+                  ): # discrete color scale for use in plotly
+    '''
+    Function generates a list of lenth = num_colors, which correspond to interpolation between anchor colors.
+
+    Parameters
+    ----------
+    num_colors : int,
+        number of colors desired in the returned list.
+    colors : list or string, optional
+        DESCRIPTION. If alist, it must contain a series of color spcifications.  Valid specification include a tuple of RGB values, a string of valid css color name, a string that is a plotly formatted rgb. 
+        If the value is a string, then it must correspond to one of the built-in Plotly color scales. 
+        The default is the string 'bluered'.
+    reverse : boolean, optional
+        DESCRIPTION. Specifiesif the returned list is reversed or not. The default is False.
+    perceptual : boolean, optional
+        DESCRIPTION. Specifies if a perceptually uniform color space should be used for the interpolation between colors. The default is False.
+    as_string : boolean, optional
+        DESCRIPTION. Specifies the format of the items in the returned list.  
+        When True, the results are returnd as "rgb(x, x, x)", which is how plotly expects the color specifications. 
+        If False, then the items are a tuble (x, x, x). 
+        The default is True.
+     : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    a list of color specifications
+
+    '''
+    
+    if isinstance(colors, str): # assume this is a named color scale
+        color_list = sampleColorScale(num_colors, color_scale = colors)    
+    elif isinstance(colors, list): # specifying a custom scale
+        if perceptual:
+            raise "perceptual is not yet implemented"
+        else:
+            if isinstance(colors[0], list) and len(colors[0])==2: # expect sublists of color and position
+                colors_to_pass = []
+                scale = []
+                for item in colors:
+                    colors_to_pass.append(item[0])
+                    scale.append(item[1])
+                    # if we change this so that we can check the first entry to be 0 and the last is 1
+                    # so, then we don't need to always include these
+            else: # think of more robust treatment
+                colors_to_pass = colors
+                scale = None
+            custom_color_scale = customColorScale(colors_to_pass, scale)
+            color_list = sampleColorScale(num_colors, color_scale = custom_color_scale)    
+    
+    return color_list
+
+
+    
+    
+
 def quickGrid(x = None, labels = None, template = "simple_white", output = "png"):
     '''
     Takes a series of array and plots correlation between them...
