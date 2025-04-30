@@ -1,10 +1,24 @@
 # some tools for handling opening and plotting....
 import numpy as np
 
+# make separate wrappers for latex, html, unicode, 
+# copy in the library
+
 def quickReadCSV(file = None, cols = None, delimiter = ",", skip_header = 1):
     '''
-    This function is going to read from a csv quickly. 
-    The base behavior is to just take a number of columns and read them and return them
+    A wrapper for Numpy's genfromtxt to read a CSV file with minimal code.
+    
+    Will work out of the box for a typical CSV having one header row with 
+    no keywords, returns columns as tuple of Numpy arrays.
+
+    Optional Params:
+    file (str or Path): The file to be read. (default: open a dialog box to choose)
+    cols (list of int): A list of the columns to be read. (default: read all columns)
+    delimiter (str):    The delimiter. (default, comma)
+    skip_header (int):  How many rows to skip, when acting as a header. (default, 1)
+
+    Returns:
+    (tuple): The columns of data as Numpy ndarrays.
     '''
     if file is None:
         file = quickOpenFilename()
@@ -19,31 +33,50 @@ def quickReadCSV(file = None, cols = None, delimiter = ",", skip_header = 1):
                                     skip_header=skip_header,
                                     unpack=True,
                                     )
-    else: # probably should check to make sure it is a thing that can be a list... in elif
+    elif isinstance(cols, list) and all([isinstance(c, int) for c in cols]):
         read_columns = np.genfromtxt(file, 
                                 delimiter = delimiter,
                                 skip_header=skip_header,
                                 usecols=cols,
                                 unpack=True,
                                 )
+    elif isinstance(cols, int):
+        read_columns = np.genfromtxt(file, 
+                                delimiter = delimiter,
+                                skip_header=skip_header,
+                                usecols=[cols],
+                                unpack=True,
+                                )
+    else:
+        print('The cols parameter needs to be specified as a list of integers or a single integer')
+        return
+
     return read_columns
 
-def quickSaveCSV(file, data, format = None, delimiter = ', ', header = ''):
+def quickSaveCSV(data, file = None, format = None, delimiter = ', ', header = ''):
     """
     Saves a CSV file of 1D or 2D data.
     
-    Parameters:
-    - file (str or Path):     The path to save the file.
-    - data (list or ndarray): The data to save.  Can be 1D or 2D list or ndarrays, or list of 1D ndarrays
+    Required Params:
+    data (list or ndarray): The data to save.  Can be 1D or 2D list or ndarrays, or list of 1D ndarrays.
     
-    Keywords:
-    - format (str or list):   A format string using either pre-Python2.6 format ('%5.3f') for f-string
+    Optional Params:
+    file (str or Path):     The path to save the file. (default: use a dialog box)
+    format (str or list):   A format string using either pre-Python2.6 format ('%5.3f') for f-string
                               format ('5.3f').  The colon is omitted.  Default is '.14f'.  If columns need 
                               different formatting, a list of f-string style format strings for each column 
                               can be provided.
-    - delimiter (str):        The delimiter character: ', ' (comma, default), ' ' (space), '\t' (tab), or anything else
-    - header (str):           Column header text.  Default is no header
+    delimiter (str):        The delimiter character. (default: ', ', options: (' ', '\t', anything else))
+    header (str):           Column header text.  Default is no header
     """
+    from pathlib import Path
+
+    # Check to see what file we are saving to
+    if file == None:
+        file = quickSaveFilename()
+    elif not isinstance(file, str) and not isinstance(file, Path):
+        print('You must supply a string or pathlib Path object, or nothing to use a dialog box')
+    
     # Check which type of data we have received and make a new numpy array holding it
     if isinstance(data, list) or isinstance(data, tuple):
         # If we got a list, then we need to turn rows into columns to make a 2D array
@@ -121,15 +154,28 @@ def quickSaveCSV(file, data, format = None, delimiter = ', ', header = ''):
     # Write the file
     np.savetxt(file, prep_data, delimiter = delimiter, fmt = new_format, header = header, comments = '')
 
-def quickPlotCSV(file, cols = None, skip_header = 1, plotType = "scatter", xcol = 0):
+def quickPlotCSV(file = None, cols = None, delimiter = ',', skip_header = 1, plotType = "scatter", xcol = 0):
     '''
-    xcol: int which is the column number that will be the x-data
-    plotType: string the sort of plot we want "scatter" "bars" "hist", etc
+    Plot the data in a CSV file using plotly.
+    
+    Assumes that all columns share a single set of x points that by default is column
+    0 but can be specified by xcol = <int>.  Can produce scatter, bar, and histogram plot types.
+
+    Optional Params:
+    file (str or Path): The file to be read. (default: open a dialog box to choose)
+    cols (list of int): A list of the columns to be read. (default: read all columns)
+    delimiter (str):    The delimiter. (default: comma)
+    skip_header (int):  How many rows to skip, when acting as a header. (default: 1)
+    xcol (int):         The column number for the x-data. (default: 0)
+    plotType (str):     The type of plot that we want. (default: 'scatter', options: ('hist', 'bars'))
+
+    Returns:
+    (Figure): A plotly figure object
     '''
 
     from codechembook import quickPlots as qp
 
-    read_columns = quickReadCSV(file, cols = cols, skip_header = skip_header)
+    read_columns = quickReadCSV(file, cols = cols, delimiter = delimiter, skip_header = skip_header)
 
     xdata = read_columns[xcol]
     ydata = []
@@ -148,19 +194,18 @@ def quickOpenFilenames(title="Select files to open", initialpath='.', filetypes=
     """
     Opens a file dialog to select multiple files, returning a sorted list of Path objects.
     
-    Parameters:
-    - title (str): The title of the file selection dialog window. Defaults to "Select files to open".
-    - initialpath (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
-                               Accepts both Path objects and strings.
-    - filetypes (str or iterable): The types of files to display in the dialog. Defaults to showing all files.
-                         Should be a string in the format 'Description, *.extension' or a list/tuple of the same.
-    
+    Optional Params:
+    title (str):                 Title of the file selection dialog window. (default: "Select files to open")
+    initialpath (str or Path):   Initial directory for the dialog. (default: ',' (current working directory))
+    filetypes (str or iterable): Types of files to display in the dialog. (default: "All files, *.*")
+                                   Should be 'Description, *.extension' or a list/tuple of the same.
+    sort (bool):                 Whether the filenames in the collection should be sorted.
+
     Returns:
-    - List[Path]: A sorted list of selected file paths as Path objects.
+    (list of Path): Selected file paths, or empty list if "Cancel" is clicked.
     """
     from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
     from pathlib import Path
-
 
     # Ensure initialpath is a string (if passed as a Path object)
     if isinstance(initialpath, Path):
@@ -169,7 +214,7 @@ def quickOpenFilenames(title="Select files to open", initialpath='.', filetypes=
     # If we got a list of file types, reformat it for getOpenFileName as a string with ';;' between entries
     if isinstance(filetypes, list):
         filetypes = ';;'.join(filetypes)
-    
+     
     # Ensure QApplication instance exists
     app = QApplication.instance()
     if app is None:
@@ -194,15 +239,14 @@ def quickOpenFilename(title="Select file to open", initialpath='.', filetypes='A
     """
     Opens a file dialog to select multiple files, returning a sorted list of Path objects.
     
-    Parameters:
-    - title (str): The title of the file selection dialog window. Defaults to "Select files to open".
-    - initialpath (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
-                               Accepts both Path objects and strings.
-    - filetypes (str or iterable): The types of files to display in the dialog. Defaults to showing all files.
-                         Should be a string in the format 'Description, *.extension' or a list/tuple of the same.
+    Optional Params:
+    - title (str):                 Title of the file selection dialog window. (default: "Select files to open")
+    - initialpath (str or Path):   Initial directory for the dialog. (default: '.')
+    - filetypes (str or iterable): Types of files to display in the dialog. (default: "All files, *.*")
+                                     Should be 'Description, *.extension' or a list/tuple of the same.
     
     Returns:
-    - Path or None: A Path object unless "Cancel" is clicked.
+    - Path or None: Selected file if "OK" is clicked, None if "Cancel" is clicked.
     """
     from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
     from pathlib import Path
@@ -236,13 +280,12 @@ def quickSelectFolder(title="Select folder", initialpath="."):
     """
     Opens a folder selection dialog, returning the selected folder as a Path object.
 
-    Parameters:
-    - title (str): The title of the folder selection dialog window. Defaults to "Select folder".
-    - initialpath (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
-                                Accepts both Path objects and strings.
+    Optional Params:
+    - title (str):               Title of the folder selection dialog window. (default: "Select folder")
+    - initialpath (str or Path): Initial directory for the dialog. (default: '.')
 
     Returns:
-    - Path: A Path object representing the selected folder, or None if no folder was selected.
+    - Path: Selected folder, or None if "Cancel" is clicked.
     """
     from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
     from pathlib import Path
@@ -275,15 +318,14 @@ def quickSaveFilename(title="Choose or create a filename to save",
     """
     Opens a file dialog to choose a filename for saving, returns a Path object.
 
-    Parameters:
-    - title (str): The title of the file selection dialog window. Defaults to "Define file to save".
-    - initialpath (str or Path): The initial directory for the dialog. Defaults to the current directory '.'.
-                                Accepts both Path objects and strings.
-    - filetypes (str or iterable): The types of files to display in the dialog. Defaults to showing all files.
-                                   Should be a string in the format 'Description, *.extension' or a list/tuple of the same.
+    Optional Params:
+    - title (str):                 Title of the file selection dialog window. (default: "Define file to save")
+    - initialpath (str or Path):   Initial directory for the dialog. (default: ',' (current working directory))
+    - filetypes (str or iterable): Types of files to display in the dialog. (default: "All files, *.*")
+                                     Should be 'Description, *.extension' or a list/tuple of the same.
 
     Returns:
-    - Path: the path to the filename that is to be saved.
+    - Path: Path to file that is to be saved, or None if "Cancel" is clicked.
     """
     from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow
     from pathlib import Path
@@ -316,13 +358,10 @@ def quickSaveFilename(title="Choose or create a filename to save",
 
 def quickPopupMessage(message="This is a message. Click OK to continue."):
     """
-    Displays a simple popup with a message and an OK button.
+    Displays a simple popup dialog with a message and an OK button.
 
-    Parameters:
-    - message (str): The message to display in the popup.
-
-    Returns:
-    - None
+    Optional Params:
+    message (str): Message to display. (default: "This is a message. Click OK to continue")
     """
     from PyQt5.QtWidgets import QApplication, QMessageBox, QMainWindow
     from PyQt5.QtCore import Qt
@@ -365,13 +404,13 @@ def quickPopupChoice(message="Choose an option:", option1="Option 1", option2="O
     """
     Displays a popup dialog with a message and two buttons, returning the selected option as a string.
 
-    Parameters:
-    - message (str): The message to display in the popup.
-    - option1 (str): The text for the first button.
-    - option2 (str): The text for the second button.
+    Optional Params:
+    message (str): Message to display in the popup. (default: "Choose an option:")
+    option1 (str): Text for the first button. (default: "Option 1")
+    option2 (str): Text for the second button. (default: "Option 2")
 
     Returns:
-    - str: The text of the button selected by the user.
+    str: Text of the button selected by the user.
     """
     from PyQt5.QtWidgets import QApplication, QMessageBox, QMainWindow
     from PyQt5.QtCore import Qt
@@ -427,12 +466,11 @@ def quickPopupInput(message="Enter some text:"):
     """
     Displays a popup dialog with a message, a text input box, and OK/Cancel buttons.
     
-    Parameters:
-    - message (str): The message to display in the popup.
+    Optional Params:
+    message (str): Message to display in the popup.
 
     Returns:
-    - str: The text entered by the user if OK is clicked.
-    - None: If Cancel is clicked.
+    str: Text entered by the user, or None if "Cancel" is clicked.
     """
     from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QMainWindow
     from PyQt5.QtCore import Qt
@@ -506,13 +544,12 @@ def quickPopupDropdown(message="Select an option:", options=("Option 1", "Option
     """
     Displays a popup dialog with a message, a dropdown menu, and OK/Cancel buttons.
 
-    Parameters:
-    - message (str): The message to display in the popup.
-    - options (list or tuple of str): A list or tuple of options to display in the dropdown.
+    Optional Params:
+    message (str):                  Message to display in the popup. (default: "Select an option:")
+    options (list or tuple of str): Options to display in the dropdown.
 
     Returns:
-    - int: The index of the selected option if OK is clicked.
-    - None: If Cancel is clicked.
+    int: Index of the selected option, or None if "Cancel" is clicked.
     """
     from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QComboBox, QPushButton, QHBoxLayout, QMainWindow
     from PyQt5.QtCore import Qt
@@ -588,12 +625,11 @@ def quickPopupCheckboxes(message="Select options:", options=("Option 1", "Option
     Displays a popup dialog with a message, a series of checkboxes, and OK/Cancel buttons.
 
     Parameters:
-    - message (str): The message to display in the popup.
-    - options (list or tuple of str): A list or tuple of options to display as checkboxes.
+    message (str):                  Message to display in the popup. (default: "Select Options:")
+    options (list or tuple of str): Options to display as checkboxes.
 
     Returns:
-    - tuple: A tuple of indices of the checkboxes that are checked if OK is clicked.
-    - None: If Cancel is clicked.
+    tuple: Indices of the checkboxes that are checked, or None if "Cancel" is clicked.
     """
     from PyQt5.QtWidgets import (
         QApplication,
@@ -679,11 +715,13 @@ def quickPopupCheckboxes(message="Select options:", options=("Option 1", "Option
 
 def importFromPy(py_name, *args):
     """
-    Load a function or other object from a Python file that is not in the CWD or library.
+    Import a function or other object from a Python file that is not in the CWD or library.
 
-    Parameters:
+    Required Params:
     py_name (str): The name of the Python script from which you want to import.
-    *args (str): Names of the objects to import from the script.
+                     If not in PYTHONPATH, a dialog box will open to allow the user to specify
+                     the file location.
+    *args (str):   Names of the objects to import from the script.
     """
     import importlib.util
     from pathlib import Path
