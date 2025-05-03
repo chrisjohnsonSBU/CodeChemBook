@@ -61,6 +61,16 @@ def process_output(plot, output):
         print("Enter 'png' to plot in Spyder or 'browser' for the browser.")
         print("Use 'None' to show nothing and return the figure object.")
 
+
+
+
+
+
+
+
+
+
+
 def sampleColorScale(num_colors, color_scale = 'bluered', mid_value = None):
     '''
     Create a color scale with a given number of colors from a continuous color scale.
@@ -88,19 +98,19 @@ def sampleColorScale(num_colors, color_scale = 'bluered', mid_value = None):
 
 def customColorScale(colors, scale=None):
     """
-    Create a color scale from arbitrary colors.
+    Create a plotly color scale from arbitrary colors.
 
     Required Params:
     colors (list of str or ???): At least two colors, specified as rgb or hex strings, CSS named colors, or ???
 
     Optional Params:
-    scale (list or ndarray): At least two numbers (same as len(colors)) specifying the placement of the provided
+    scale (list or ndarray): At least two numbers (same length as colors) specifying the placement of the provided
                                colors on a scale.
 
     Returns:
     (list of list): Plotly-compatible color scale.
     """
-    from plotly.colors import convert_colors_to_same_type
+    import plotly.colors.convert_colors_to_same_type
 
     # A dict of named CSS colors and their hex values
     css_color_dict = {
@@ -254,16 +264,18 @@ def customColorScale(colors, scale=None):
     "yellowgreen": "#9acd32"
     }
 
+
+    # need to translate whatever color specification was given into something that Plotly will recognize
     translated_colors = []
     for c in colors:
-        if isinstance(c, str):
+        if isinstance(c, str): #this is just a straight designation of color
             if c.startswith("rgb") or c.startswith("#"): # may need to handle rgba separately
                 translated_colors.append(c)
             elif c in css_color_dict.keys():
                 translated_colors.append(css_color_dict[c])
             else:
                 raise "You supplied a color incorrectly."
-        else: # what is this case?
+        else: # I don't think this handles colors robustly enough.  This should really check if the format is what Plotly needs. 
             translated_colors.append(c)
 
     # If the user does not specify a scale, create one that is equally spaced from 0.0 to 1.0
@@ -273,34 +285,38 @@ def customColorScale(colors, scale=None):
     print(f"inside customColorScale: colors_to_pass = {translated_colors}, scale = {scale}")
 
     # get the formatted colors and scales
-    temp_scale = convert_colors_to_same_type(
+    temp_scale = plotly.colors.convert_colors_to_same_type(
         translated_colors,
         scale = scale,
-        colortype = "rgb")
+        colortype = "rgb", # the output we expect.
+        )
 
-    # restructuring this object to be a properly formatted color scale
+    # we need to take the output from above and
+    # restructure it into a properly formatted Plotly color scale
     color_scale = []
     for color, position in zip(temp_scale[0], temp_scale[1]):
         color_scale.append([position, color])
 
-    return color_scale
+    return color_scale # this is a color scale that Plotly will recognize. 
 
 def customColorList(num_colors, # the number of colors you want in the list
-                  colors = 'bluered', # either a string or a list of colors
+                    scale = None, # can hold anchor positions for colors, if desired. If none is supplied, then will evenly space them
+                  colors = 'bluered', # either a string (name of color scale in plotly) or a list of colors
                   reverse = False,
                   perceptual = False, # eventually a flag for this
                   as_string = True, # controls the output
                   ): # discrete color scale for use in plotly
     '''
-    Generates a list of lenth = num_colors, which correspond to interpolation between anchor colors.
+    Generates a list of length = num_colors, which correspond to interpolation between anchor colors.
 
     Required Params:
     num_colors (int): Number of colors needed.
 
     Optional Params:
-    colors (list or string): If list, contains a series of color spcifications.
-                               (strings of RGB values, Plotly formatted rgb, or named CSS colors)
-                               If str, a built-in Plotly color scale. (default: 'bluered')
+    colors (list or string): If str, a built-in Plotly color scale. (default: 'bluered')
+                            If list, there are two options:
+                                1. contains a series of color specifications (strings of RGB values, Plotly formatted rgb, or named CSS colors)
+                                2. contains a series of sublists (each two items long) that contain first the color specification (as above) and then the anchor position for the color.  This last will be translated into the scale object.  SO this second option is just an alternative way to supply the scale object.
     reverse (bool):          Reverse the produced color list. (default: False)
     perceptual (bool):       Require a perceptually uniform color space. (default: False)
     as_string (bool):        Format of the colors in the returned list.  When True, results are a Plotly
@@ -314,7 +330,7 @@ def customColorList(num_colors, # the number of colors you want in the list
     if isinstance(colors, str): # assume this is a named color scale
         color_list = sampleColorScale(num_colors, color_scale = colors)
     elif isinstance(colors, list): # specifying a custom scale
-        if perceptual:
+        if perceptual: # eventually, generate a perceptually uniform color scale
             raise "perceptual is not yet implemented"
         else:
             if isinstance(colors[0], list) and len(colors[0])==2: # expect sublists of color and position
@@ -327,7 +343,6 @@ def customColorList(num_colors, # the number of colors you want in the list
                     # so, then we don't need to always include these
             else: # think of more robust treatment
                 colors_to_pass = colors
-                scale = None
             custom_color_scale = customColorScale(colors_to_pass, scale)
             color_list = sampleColorScale(num_colors, color_scale = custom_color_scale)
 
