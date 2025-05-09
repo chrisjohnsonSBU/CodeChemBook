@@ -71,7 +71,7 @@ def process_output(plot, output):
 
 
 
-def sampleColorScale(num_colors, color_scale = 'bluered', mid_value = None):
+def sampleColorScale(num_colors, color_scale = 'bluered', reverse = False):
     '''
     Create a color scale with a given number of colors from a continuous color scale.
 
@@ -94,6 +94,9 @@ def sampleColorScale(num_colors, color_scale = 'bluered', mid_value = None):
 
     colors = sample_colorscale(color_scale, [i / (num_colors - 1) for i in range(num_colors)])
 
+    if reverse:
+        colors = colors.reverse()
+        
     return colors
 
 def customColorScale(colors, scale=None):
