@@ -5,7 +5,7 @@
 #
 ###############################################################################
 
-from codechembook.chemformula import ChemFormula # no module for this
+from codechembook.symbols.chemformula import ChemFormula # no module for this
 
 def _enclose(text, html_center):
     if type(text) == str and type(html_center) == str:
