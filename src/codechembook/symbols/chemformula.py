@@ -336,9 +336,9 @@ class ChemFormula(ChemFormulaString):
         self.__name = str(name)
 
     # Returns the CAS registry number of the formula object
-    @property
-    def cas(self):
-        return None if self.__cas is None else self.__cas
+    #@property
+    #def cas(self):
+    #    return None if self.__cas is None else self.__cas
 
     # Checks, whether the CAS registry number is valid by using the CAS class from CASRegistryNumber.py
     # currently commented out because casregnum is not on conda
