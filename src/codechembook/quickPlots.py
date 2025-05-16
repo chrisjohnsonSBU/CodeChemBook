@@ -3,6 +3,7 @@ import numpy as np
 import math
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import plotly.colors
 import plotly.io as pio
 import json
 import inspect
@@ -71,7 +72,12 @@ def process_output(plot, output):
 
 
 
-def sampleColorScale(num_colors, color_scale = 'bluered', reverse = False):
+def sampleColorScale(num_colors, 
+                    color_scale = 'bluered', 
+                    reverse = False,
+                    perceptual = False,
+                    output = "string"
+                    ):
     '''
     Create a color scale with a given number of colors from a continuous color scale.
 
@@ -105,6 +111,7 @@ def customColorScale(colors, scale=None):
 
     Required Params:
     colors (list of str or ???): At least two colors, specified as rgb or hex strings, CSS named colors, or ???
+    eventually, accept a list of 2 member lists
 
     Optional Params:
     scale (list or ndarray): At least two numbers (same length as colors) specifying the placement of the provided
@@ -113,7 +120,6 @@ def customColorScale(colors, scale=None):
     Returns:
     (list of list): Plotly-compatible color scale.
     """
-    import plotly.colors.convert_colors_to_same_type
 
     # A dict of named CSS colors and their hex values
     css_color_dict = {
@@ -302,57 +308,6 @@ def customColorScale(colors, scale=None):
 
     return color_scale # this is a color scale that Plotly will recognize. 
 
-def customColorList(num_colors, # the number of colors you want in the list
-                    scale = None, # can hold anchor positions for colors, if desired. If none is supplied, then will evenly space them
-                  colors = 'bluered', # either a string (name of color scale in plotly) or a list of colors
-                  reverse = False,
-                  perceptual = False, # eventually a flag for this
-                  as_string = True, # controls the output
-                  ): # discrete color scale for use in plotly
-    '''
-    Generates a list of length = num_colors, which correspond to interpolation between anchor colors.
-
-    Required Params:
-    num_colors (int): Number of colors needed.
-
-    Optional Params:
-    colors (list or string): If str, a built-in Plotly color scale. (default: 'bluered')
-                            If list, there are two options:
-                                1. contains a series of color specifications (strings of RGB values, Plotly formatted rgb, or named CSS colors)
-                                2. contains a series of sublists (each two items long) that contain first the color specification (as above) and then the anchor position for the color.  This last will be translated into the scale object.  SO this second option is just an alternative way to supply the scale object.
-    reverse (bool):          Reverse the produced color list. (default: False)
-    perceptual (bool):       Require a perceptually uniform color space. (default: False)
-    as_string (bool):        Format of the colors in the returned list.  When True, results are a Plotly
-                               color specification string ("rgb(x, x, x)"). When False, results are a tuple
-                               of int/float??? (x, x, x). (default: True)
-
-    Returns:
-    (list): Color specifications
-    '''
-
-    if isinstance(colors, str): # assume this is a named color scale
-        color_list = sampleColorScale(num_colors, color_scale = colors)
-    elif isinstance(colors, list): # specifying a custom scale
-        if perceptual: # eventually, generate a perceptually uniform color scale
-            raise "perceptual is not yet implemented"
-        else:
-            if isinstance(colors[0], list) and len(colors[0])==2: # expect sublists of color and position
-                colors_to_pass = []
-                scale = []
-                for item in colors:
-                    colors_to_pass.append(item[0])
-                    scale.append(item[1])
-                    # if we change this so that we can check the first entry to be 0 and the last is 1
-                    # so, then we don't need to always include these
-            else: # think of more robust treatment
-                colors_to_pass = colors
-            custom_color_scale = customColorScale(colors_to_pass, scale)
-            color_list = sampleColorScale(num_colors, color_scale = custom_color_scale)
-
-    if reverse:
-        return color_list.reverse()
-    else:
-        return color_list
 
 #
 # Tools to produce multiple plots quickly
