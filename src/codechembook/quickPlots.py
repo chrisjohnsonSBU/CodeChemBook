@@ -854,7 +854,88 @@ def plotFit(fit,
 
     return fig
 
+
+
 # quickbar
+def quickBar(data, 
+    categories=None, 
+    group_names = None, 
+    orientation = "horizontal", 
+    grouping = "grouped",
+    quantitative_label = None,
+    ):
+    '''
+    Accepts 1D arrays to plot as a bar. 
+    '''
+
+    # first we check to see if data is a single array or a list of arrays.  If single, we put it in a list. 
+
+    if quantitative_label is None:
+        quantitative_label = _get_name_two_calls_ago(data)
+
+    if type(data[0]) != np.ndarray and type(data[0]) != list: # then x is not an array or list
+        data = [data]
+
+    else:
+        try:
+            data = data # if already an array of arrays, then just keep it
+        except:
+            raise "You need to supply a list or array of floats or ints"
+
+    if categories: # if there are going to be categories, they need to be the same length as the x-values. 
+        if len(data[0]) != len(categories):
+            raise "you need to ensure you have as many categories as categories"
+    else:
+        categories = [n for n in range(1, len(data[0])+1)]
+
+
+    if group_names:
+        if len(group_names) != len(data):
+            raise "you need as many group names as you have data series"
+    else:
+        group_names = [f"series {i}" for i in range(1, len(data)+1)]
+
+    chart = make_subplots()
+
+    if orientation[0].lower() == 'h':
+        if grouping == "grouped":
+            for d, gn in zip(data, group_names):
+                chart.add_bar(x = d, y = categories, orientation = orientation[0].lower(),
+                    name = gn,
+                    )
+                chart.update_xaxes(title = quantitative_label)
+                chart.update_yaxes(type = "category",ticks = "", )
+
+    elif orientation[0].lower() == "v":
+        if grouping == "grouped":
+            for d, gn in zip(data, group_names):
+                chart.add_bar(x = categories, y = d, orientation = orientation[0].lower(),
+                    name = gn,
+                    )
+                chart.update_xaxes(type = "category", ticks = "",)
+                chart.update_yaxes(title = quantitative_label)
+
+    else:
+        raise "orientation needs to be 'h' or 'v'"
+    # start the plotting
+    
+    
+    chart.update_layout(
+        template = "simple_white",
+        bargap = 0.33*1/(len(data)), # gap is 1/3 the width of a single bar
+        )
+
+    chart.show("png")
+
+    return chart
+    # no categorical axes titles
+    # quantitative axes title given by?
+    # no outline
+    # light blue fill?
+
+
+
+
 
 # quick box
 
