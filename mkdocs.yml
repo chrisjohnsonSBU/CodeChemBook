@@ -1,0 +1,63 @@
+site_name: CodeChemBook
+site_description: Python tools for chemists.
+site_author: Chris Johnson
+site_url: https://chrisjohnsonsbu.github.io/CodeChemBook/
+
+repo_url: https://github.com/chrisjohnsonSBU/CodeChemBook
+repo_name: GitHub
+edit_uri: "edit/2.0.0/docs/"
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.top
+    - toc.integrate
+    - content.code.annotate
+    - content.tabs.link
+    - navigation.instant
+  palette:
+    scheme: default
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: numpy
+            show_signature: true
+            separate_signature: true
+            show_source: false
+            merge_init_into_class: true
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Usage: usage.md
+  - API Reference:
+      - Utilities:
+          - Helpful Coding Tools: 
+              - quickTools: api/codechembook/quickTools.md
+          - Numerical Shortcuts: 
+              - numericalTools: api/codechembook/numericalTools.md
+      - Plotting:
+          - Plotly Plot Shortcuts: api/codechembook/quickPlots.md
+          - Plotly Templates for Journals: api/codechembook/plotlyTemplates.md
+      - Symbols and Typesetting:
+          - Elements: api/codechembook/symbols/elements.md
+          - Chemistry Symbols: api/codechembook/symbols/chem.md
+          - Chemistry Formulas: api/codechembook/symbols/chemformula.md
+          - Greek Letters: api/codechembook/symbols/greek.md
+          - Mathematical Symbols: api/codechembook/symbols/math.md
+          - Script Symbols: api/codechembook/symbols/script.md
+          - Typography: api/codechembook/symbols/typography.md
+          - HTML Typesetting Helpers: api/codechembook/symbols/typesettingHTML.md

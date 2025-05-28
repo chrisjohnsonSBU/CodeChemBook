@@ -1,7 +1,7 @@
 # THIS IS FROM THE CODECHEMBOOK LIBRARY AND CAN BE REMOVED ONCE THIS LIBRARY IS ON CONDA
 
 import re
-import elements
+import codechembook.symbols.elements as elements
 #import casregnum <-- commented out, because not on conda
 from collections import defaultdict
 
