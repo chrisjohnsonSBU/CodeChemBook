@@ -863,6 +863,8 @@ def quickBar(data,
     orientation = "horizontal", 
     grouping = "grouped",
     quantitative_label = None,
+    template = "simple_white", 
+    output = "png"
     ):
     '''
     Accepts 1D arrays to plot as a bar. 
@@ -921,11 +923,11 @@ def quickBar(data,
     
     
     chart.update_layout(
-        template = "simple_white",
+        template = template,
         bargap = 0.33*1/(len(data)), # gap is 1/3 the width of a single bar
         )
 
-    chart.show("png")
+    process_output(chart, output) # check to see how we should be outputting this plot
 
     return chart
     # no categorical axes titles
@@ -938,6 +940,68 @@ def quickBar(data,
 
 
 # quick box
+def quickBox(data, 
+             labels = None,
+             orientation = "horizontal",
+             showmean = True,
+             template = "simple_white",
+             directlabel = True,
+             boxwidth = 0.66,
+             quantitative_label = None,
+             ):
+    
+    if quantitative_label is None:
+        quantitative_label = _get_name_two_calls_ago(data)
+    
+    # first we check to see if data is a single array or a list of arrays.  If single, we put it in a list. 
+    
+    if type(data[0]) != np.ndarray and type(data[0]) != list: # then x is not an array or list
+        data = [data]
+    else:
+        try:
+            data = data # if already an array of arrays, then just keep it
+        except:
+            raise "You need to supply a list or array of floats or ints"
+    
+    #set up labels
+    label_strings= []
+    if labels == None:
+        for i in range(len(data)):
+            label_strings.append(f"group {i+1}")
+    
+    chart = make_subplots()
+    chart.update_layout(template = template)
+    
+    
+    for d in data:
+        chart.add_box(
+            x = d,
+            width = boxwidth,# this leaves a gap of 1/2 a bar width between traces.
+            )
+    
+    chart.update_yaxes(range = [len(data)-1+boxwidth*3/4, 0-boxwidth*3/4], ticks = "")
+    chart.update_xaxes(title = quantitative_label,)
+    
+    if showmean:
+        chart.update_traces(boxmean = True)
+        
+    if directlabel:
+        chart.update_traces(showlegend = False)
+        chart.update_yaxes(showline = False, showticklabels = False)
+        for name, datapoints, ypos in zip(label_strings, data, range(len(data))):
+            chart.add_annotation(
+                text = name, 
+                font = dict(color = chart.layout.template.layout.colorway[ypos%len(chart.layout.template.layout.colorway)]),
+                x = np.quantile(np.array(datapoints), 0.25),
+                y = ypos - boxwidth/2,
+                xanchor = "left",
+                yanchor = "bottom",
+                showarrow = False,
+                )
+    
+    chart.show("png")
+    
+    return chart
 
 # quick violin
 
