@@ -1,0 +1,3 @@
+# codechembook.plotlyTemplates
+
+::: codechembook.plotlyTemplates

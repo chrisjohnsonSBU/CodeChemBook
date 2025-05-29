@@ -1,0 +1,30 @@
+name: Docs Check
+
+on:
+  push:
+    branches:
+      - 2.0.0
+  pull_request:
+    branches:
+      - 2.0.0
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install mkdocs mkdocs-material mkdocstrings[python]
+
+      - name: Build documentation
+        run: |
+          mkdocs build --strict

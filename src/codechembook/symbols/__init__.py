@@ -13,3 +13,4 @@ from . import math
 from . import script
 from . import typography
 from . import typesettingHTML # this one is functions
+from . import chemformula
