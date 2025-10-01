@@ -264,20 +264,22 @@ def quickSubs(childPlots = None,
     
 def quickScatter(x = None, y = None, xlabel = None, ylabel = None, name = None, template = "simple_white", mode = None, output = "png"):
     """
-    Quickly plot one xy trace in plotly.
+    Quickly plot (x,y) data as a scatter plot.
+
+    Users can supply single arrays or lists for x- and y-values, a single set of x-values and multiple sets of
+    y-values, or multiple sets of x-values and y-values.  If multiple sets of y-values, name and mode can be
+    lists of len(y).
 
     Optional Args:
-        x (ndarray or list of ndarray): the x coordinates to plot
-        y (ndarray or list of ndarray): the y coordinates to plot
-        xlabel (string):                x axis title
-        ylabel (string):                y axis title
-        mode (string):                  plot using 'lines'(default) or 'markers'
-        template (string):              which plotly template to use (default simple_white)
-        show (string):                  output to Spyder plot window ('png', 'svg')
-                                           or browser ('browser')
-                                           or the 'normal' show behavior ('default')
-                                           or 'None' for no output
-                    
+        x (ndarray or list/ndarray of ndarray): x-values to plot.
+        y (ndarray or list/ndarray of ndarray): y-values to plot.
+        xlabel (str or list of str):            x-axis title. (default: None (use variable name))
+        ylabel (str or list of str):            y-axis title. (default: None (use variable name))
+        name (str or list of str):              Names of traces. (default: '')
+        mode (str or list of str):              Trace appearance for Plotly Scatter object. (default: None (automatically determine))
+        template (str):                         Plotly template for formatting Figure. (default: 'simple_white')
+        show (str):                             Method to show the plot. (default: "png", options: valid Plotly output types, None for no output)
+
     Returns:
         qplot (plotly figure object): the figure object created
     """
@@ -287,54 +289,75 @@ def quickScatter(x = None, y = None, xlabel = None, ylabel = None, name = None, 
     if ylabel is None:
         ylabel = _get_name_two_calls_ago(y)
 
+    # figure out what the user gave us for x and y
+    if isinstance(x, list) or isinstance(x, np.ndarray):
+        if all(isinstance(xi, list) or isinstance(xi, np.ndarray) for xi in x):
+            xplot = x
+        elif all(isinstance(xi, float) or isinstance(xi, int) for xi in x):
+            xplot = [x]
+        else:
+            print("You need to supply a list or array of floats or ints for x")
+            return
+    
+    if isinstance(y, list) or isinstance(y, np.ndarray):
+        if all(isinstance(yi, list) or isinstance(yi, np.ndarray) for yi in y):
+            yplot = y
+        elif all(isinstance(yi, float) or isinstance(yi, int) for yi in y):
+            yplot = [y]
+        else:
+            print("You need to supply a list or array of floats or ints for y")
+            return
 
-    if type(x[0]) != np.ndarray and type(x[0]) != list: # then x is not an array or list
-        xplot = [x]
+    # figure out what the user gave us for name
+    if name is None:
+        name = ['' for y in yplot]
+    elif isinstance(name, str):
+        if len(yplot) > 1:
+            tempname = name
+            name = [f'{tempname}{i}' for i, y in enumerate(yplot)]
+        if len(yplot) == 1:
+            name = [name]
+    elif isinstance(name, list):
+        if len(name) != len(yplot):
+            print("your list of names is a different length than your list of y values")
+            return
     else:
-        try: 
-            xplot = x # if already an array of arrays, then just keep it
-        except:
-            raise "You need to supply a list or array of floats or ints"
-    if type(y[0]) != np.ndarray and type(y[0]) != list: # then y is not an array or list
-        yplot = [y]
-    else:
-        try: 
-            yplot = y # if already an array of arrays, then just keep it
-        except:
-            raise "You need to supply a list or array of floats or ints"
-    
-    #next, let us ensure we can iterate through x and y together
+        print("there was a problem with your name argument")
+        return
+
+    # ensure that we have the same number of items for x and y
     if len(xplot) == 1:
-        xplot = [xplot[0]]*len(yplot)
+        xplot = [xplot[0]] * len(yplot)
     elif len(xplot) != len(yplot):
-        raise "your x values should be a list of length equal to y values, or a list of 1"
-    
+        raise "your x values should be a list or array of length equal to y values, or a list or array of 1"
+
     # start the plotting
     qplot = make_subplots()
-    if name is None:
-        name = ['' for x in xplot]
+        
+    # loop through the provided lists and add them to the plot
     for xi,yi,ni in zip(xplot, yplot, name):
         if len(xi) != len(yi):
             raise "you do not have the same number of x and y points!"
         if mode is None:
-            points = go.Scatter(x=xi, y = yi, name = ni)
+            points = go.Scatter(x = xi, y = yi, name = ni)
         elif "lines" in mode or "markers" in mode:
-            points = go.Scatter(x=xi, y = yi, mode = mode, name = ni)
+            points = go.Scatter(x = xi, y = yi, mode = mode, name = ni)
         else:
             raise "please enter either 'lines', 'markers', 'lines+markers', or None for mode"
         qplot.add_trace(points)
 
+    # set up the axes
     qplot.update_xaxes(title = str(xlabel)) # cast as string to handle numeric values if passed
     qplot.update_yaxes(title = str(ylabel))
-    
+
     # confirm that the specified template is one that we have
     if template not in pio.templates.keys():
         print('Invalid template specified, defaulting to simple_white.')
         template = 'simple_white'
     qplot.update_layout(template = template)
-    
+
     process_output(qplot, output) # check to see how we should be outputting this plot
-    
+
     return qplot
 
 def quickHist(x, 
