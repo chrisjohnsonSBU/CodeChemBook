@@ -1,6 +1,6 @@
 # __init__.py
 
-__version__ = "1.1.5"
+__version__ = "1.1.6"
 
 #from CompChemBook import *
 from .quickPlots import *
