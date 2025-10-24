@@ -1,5 +1,6 @@
 # some tools for handling opening and plotting....
 import numpy as np
+from codechembook.symbols.chemformula import ChemFormula # no module for this
 
 def quickReadCSV(file = None, cols = None, delimiter = ",", skip_header = 1):
     '''
@@ -741,3 +742,53 @@ def importFromPy(py_name, *args):
 
     return imported_objects
 
+def quickHTMLFormula(formula, charge = 0, name = None, CAS = None):
+    '''
+    Outputs a properly formatted chemical formula for use in HTML contexts.
+
+    Required Params:
+    formula (string): An unformatted chemical formula, without charge.
+
+    Optional Params:
+    charge (int):  The charge of the compound. (default: 0)
+    name (string): The name of the compound. (default: None)
+    CAS (string):  The CAS number. (default: None)
+
+    Returns:
+    (string): An HTML-formatted chemical formula.
+    '''
+    return ChemFormula(formula, charge = charge, name = name, cas = CAS).html.replace("<span class='ChemFormula'>", "").replace("</span>", "")
+
+def quickLatexFormula(formula, charge = 0, name = None, CAS = None):
+    '''
+    Outputs a properly formatted chemical formula for use in Latex contexts.
+
+    Required Params:
+    formula (string): An unformatted chemical formula, without charge.
+
+    Optional Params:
+    charge (int):  The charge of the compound. (default: 0)
+    name (string): The name of the compound. (default: None)
+    CAS (string):  The CAS number. (default: None)
+
+    Returns:
+    (string): A Latex-formatted chemical formula.
+    '''
+    return ChemFormula(formula, charge = charge, name = name, cas = CAS).latex
+
+def quickUnicodeFormula(formula, charge = 0, name = None, CAS = None):
+    '''
+    Outputs a properly formatted chemical formula for use in unicode.
+
+    Required Params:
+    formula (string): An unformatted chemical formula, without charge.
+
+    Optional Params:
+    charge (int):  The charge of the compound. (default: 0)
+    name (string): The name of the compound. (default: None)
+    CAS (string):  The CAS number. (default: None)
+
+    Returns:
+    (string): A unicode chemical formula.
+    '''
+    return ChemFormula(formula, charge = charge, name = name, cas = CAS).unicode
