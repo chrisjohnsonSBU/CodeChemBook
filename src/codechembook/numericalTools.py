@@ -9,21 +9,21 @@ import numpy as np
 import scipy.integrate as spi
 
 def integrateRange(y, x, limits, method='trapezoid'):
-    """
+    '''
     Integrate a numeric function over a range less than the full extent of
     the function.
     
-    Required Args:
-        y (ndarray): the y points for integration
-        x (ndarray): the x points for integration (need not be evenly spaced)
-        limits (list of numeric): the lower and upper limit of integration
+    Required Params:
+    y (ndarray):              y-values for integration.
+    x (ndarray):              x-values for integration. (need not be evenly spaced)
+    limits (list of numeric): Lower and upper limits of integration.
         
-    Optional Args:
-        method (string): which approach to use (trapezoid (default), rectangle, simpson)
+    Optional Params:
+    method (string): which approach to use (default: 'trapezoid', options: 'rectangle', 'simpson')
         
     Returns:
-        (float): the value of the integral
-    """
+    (float): Value of the integral
+    '''
     
     # Sort the limits so they are in the order [lower, upper]
     limits.sort()
