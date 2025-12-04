@@ -521,6 +521,85 @@ def quickPopupInput(message="Enter some text:"):
     else:
         return None  # Return None if Cancel was clicked
 
+def quickPopupMultiInput(messages=["Enter some text:"]):
+    """
+    Displays a popup dialog with multiple messages, each with a text input box, and OK/Cancel buttons.
+    
+    Optional Params:
+    message (list of str): Message to display in the popup.
+
+    Returns:
+    (list of str): Text entered by the user, or None if "Cancel" is clicked.
+    """
+    from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QMainWindow
+    from PyQt5.QtCore import Qt
+
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])  # Create a QApplication if it doesn't already exist
+
+    # Create a temporary parent window to ensure the dialog is always on top
+    parent = QMainWindow()
+    parent.setWindowFlags(Qt.WindowStaysOnTopHint)  # Ensure it's always on top
+    parent.setWindowTitle("Temporary Parent")
+    parent.resize(1, 1)  # Make the parent very small
+    parent.show()  # Show the parent window
+    parent.raise_()
+    parent.activateWindow()
+
+    # Create the custom dialog
+    dialog = QDialog(parent)
+    dialog.setWindowTitle("Input Dialog")
+    dialog.setWindowFlags(dialog.windowFlags() | Qt.WindowStaysOnTopHint)  # Always on top
+
+    # Set up the layout
+    layout = QVBoxLayout()
+
+    # Add the message label and text input box for each input
+    labels = []
+    text_inputs = []
+    for message in messages:
+        labels.append(QLabel(message))
+        layout.addWidget(labels[-1])
+        text_inputs.append(QLineEdit())
+        layout.addWidget(text_inputs[-1])
+
+    # Add OK and Cancel buttons
+    button_layout = QHBoxLayout()
+    ok_button = QPushButton("OK")
+    cancel_button = QPushButton("Cancel")
+    button_layout.addWidget(ok_button)
+    button_layout.addWidget(cancel_button)
+    layout.addLayout(button_layout)
+
+    # Connect button actions
+    def on_ok():
+        dialog.accept()  # Accept the dialog and close it
+
+    def on_cancel():
+        dialog.reject()  # Reject the dialog and close it
+
+    ok_button.clicked.connect(on_ok)
+    cancel_button.clicked.connect(on_cancel)
+
+    # Set the layout for the dialog
+    dialog.setLayout(layout)
+
+    # Show the dialog and wait for user interaction
+    result = dialog.exec_()
+
+    # Clean up the parent window
+    parent.hide()
+    app.processEvents()
+    parent.close()
+    parent.deleteLater()
+
+    # Return the appropriate value based on user interaction
+    if result == QDialog.Accepted:
+        return [text_input.text() for text_input in text_inputs]  # Return the entered text if OK was clicked
+    else:
+        return None  # Return None if Cancel was clicked
+
 def quickPopupDropdown(message="Select an option:", options=("Option 1", "Option 2", "Option 3")):
     """
     Displays a popup dialog with a message, a dropdown menu, and OK/Cancel buttons.
