@@ -526,7 +526,7 @@ def quickPopupMultiInput(messages=["Enter some text:"]):
     Displays a popup dialog with multiple messages, each with a text input box, and OK/Cancel buttons.
     
     Optional Params:
-    message (list of str): Message to display in the popup.
+    message (list of str): Messages to display in the popup.
 
     Returns:
     (list of str): Text entered by the user, or None if "Cancel" is clicked.
