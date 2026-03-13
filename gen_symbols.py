@@ -13,21 +13,33 @@ src_dir = Path(__file__).parent.parent / "src"
 sys.path.insert(0, str(src_dir))
 
 # Import the modules we want to document
-from codechembook.symbols import chem, chemformula, elements, greek, math, script, typesettingHTML, typography
+from codechembook.symbols import chem, greek, math, script, typography
 
 modules = {
     "chem": chem,
-    "chemformula": chemformula,
-    "elements": elements,
     "greek": greek,
     "math": math,
     "script": script,
-    "typesettingHTML": typesettingHTML,
     "typography": typography,
 }
 
 for mod_name, mod in modules.items():
     doc_path = f"symbols/{mod_name}.md"
+    
+    # Extract comments from the source file
+    comments = {}
+    if hasattr(mod, '__file__') and mod.__file__:
+        with open(mod.__file__, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if '#' in line:
+                    code_part, comment_part = line.split('#', 1)
+                    code_part = code_part.strip()
+                    # Check if the code part is an assignment to a variable
+                    if '=' in code_part or ':' in code_part:
+                        var_name = code_part.split(':')[0].split('=')[0].strip()
+                        if var_name:
+                            comments[var_name] = comment_part.strip()
     
     with mkdocs_gen_files.open(doc_path, "w") as fd:
         print(f"# {mod_name.capitalize()}", file=fd)
@@ -42,8 +54,8 @@ for mod_name, mod in modules.items():
         print("", file=fd)
         
         # Table Header
-        print("| Symbol | Variable Name | Python Code |", file=fd)
-        print("|:---:|:---|:---|", file=fd)
+        print("| Description | Symbol | Variable Name | Python Code |", file=fd)
+        print("|:---|:---:|:---|:---|", file=fd)
         
         # Get all variables in the module that don't start with an underscore
         variables = [(name, value) for name, value in inspect.getmembers(mod) 
@@ -51,10 +63,8 @@ for mod_name, mod in modules.items():
         
         # Write rows
         for name, value in variables:
+            description = comments.get(name, "")
             # We want to display the visual representation of the symbol.
-            # If it's a string, it's typically a unicode character.
-            # In markdown we can just print the character.
-            # To be safe against weird characters breaking the table, we might need to handle newlines.
             safe_value = str(value).replace("\n", " ").replace("|", "\\|")
             python_code = f"`from codechembook.symbols.{mod_name} import {name}`"
-            print(f"| {safe_value} | `{name}` | {python_code} |", file=fd)
+            print(f"| {description} | {safe_value} | `{name}` | {python_code} |", file=fd)
