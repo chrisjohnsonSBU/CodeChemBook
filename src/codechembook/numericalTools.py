@@ -13,16 +13,14 @@ def integrateRange(y, x, limits, method='trapezoid'):
     Integrate a numeric function over a range less than the full extent of
     the function.
     
-    Required Params:
-    y (ndarray):              y-values for integration.
-    x (ndarray):              x-values for integration. (need not be evenly spaced)
-    limits (list of numeric): Lower and upper limits of integration.
-        
-    Optional Params:
-    method (string): which approach to use (default: 'trapezoid', options: 'rectangle', 'simpson')
+    Args:
+        y (ndarray): y-values for integration.
+        x (ndarray): x-values for integration. (need not be evenly spaced)
+        limits (list of numeric): Lower and upper limits of integration.
+        method (str, optional): which approach to use (default: 'trapezoid', options: 'rectangle', 'simpson').
         
     Returns:
-    (float): Value of the integral
+        float: Value of the integral.
     '''
     
     # Sort the limits so they are in the order [lower, upper]

@@ -21,3 +21,6 @@ requires-python = ">=3.11"
 
 [project.urls]
 Homepage = "https://www.codechembook.com"
+
+[project.optional-dependencies]
+test = ["pytest"]

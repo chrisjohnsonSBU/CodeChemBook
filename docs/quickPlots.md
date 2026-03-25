@@ -1,0 +1,3 @@
+# Quick Plots
+
+::: codechembook.quickPlots

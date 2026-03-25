@@ -1,0 +1,61 @@
+site_name: CodeChemBook
+site_description: Python module for teaching coding to chemists.
+site_author: Chris Johnson
+site_dir: docs/site
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  palette:
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+  - gen-files:
+      scripts:
+        - docs/gen_symbols.py
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_root_heading: true
+            show_source: true
+            heading_level: 3
+
+nav:
+  - Home: index.md
+  - API Reference:
+    - Numerical Tools: numericalTools.md
+    - Quick Plots: quickPlots.md
+    - Quick Tools: quickTools.md
+    - Plotly Templates: plotlyTemplates.md
+  - Symbols:
+    - Chemistry: symbols/chem.md
+    - Greek Letters: symbols/greek.md
+    - Math: symbols/math.md
+    - Superscripts and Subscripts: symbols/script.md
+    - Typesetting HTML: symbols/typesettingHTML.md
+    - Typography: symbols/typography.md

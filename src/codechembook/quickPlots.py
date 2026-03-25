@@ -19,11 +19,11 @@ def _get_name_two_calls_ago(x,):
     This is a hack to automatically determine the names of variables for plotting, if the
     user does not supply names independently.
     
-    Required Params:
-    x (ndarray or iterable): the variable to get the name of.
+    Args:
+        x (ndarray or iterable): the variable to get the name of.
     
     Returns:
-    (str): Name of the variable.
+        str: Name of the variable.
     """
     n = None
     callers_locals = inspect.currentframe().f_back.f_back.f_locals
@@ -38,9 +38,9 @@ def process_output(plot, output):
     """
     Handler for different outputs that could be chosen by the user as implemented in Plotly.
 
-    Required Params:
-    plot (Figure): Plotly Figure option to plot.
-    output (str):  Type of output requested by user, among those allowed by Plotly.
+    Args:
+        plot (Figure): Plotly Figure option to plot.
+        output (str):  Type of output requested by user, among those allowed by Plotly.
     """
     # Plot the figure to the specified output
     if output in pio.renderers.keys():
@@ -62,15 +62,14 @@ def quickGrid(x = None, labels = None, template = "simple_white", output = "png"
         add fitting
         check to make sure all arrays are the same length
 
-    Required Params:
-    x (list of ndarrays or numeric): Data to plot.
-
-    Optional Params:
-    labels (list of str): Labels for the arrays. (default: None)
-    template (str):       Named plotly template. (default: "simple_white")
+    Args:
+        x (list of ndarrays or numeric): Data to plot.
+        labels (list of str, optional): Labels for the arrays. (default: None)
+        template (str, optional): Named plotly template. (default: "simple_white")
+        output (str, optional): Output format. (default: "png")
 
     Returns:
-    (Figure): Plotly Figure object plotting correlations between arrays.
+        Figure: Plotly Figure object plotting correlations between arrays.
     '''
     # first make sure that we have lists of lists... 
     # so this first section makes sure that, if we get a single list, we put it in a list
@@ -115,16 +114,14 @@ def quickBin(x, limits = None, nbins = None, width = None):
     Accepts a collection of numbers that can be coerced into a numpy array, and bins these numbers.
     If none of keyword arguments are specified, this results in a Freeman-Diaconis binning.
 
-    Reauired Params:
-    x (ndarray or list): Data set bin.
-
-    Optional Params:
-    limits (list of numeric): Upper and lower limits of data to bin. (default: min and max of x)
-    nbins (int):              Number of bins. (default: None (automatically determine))
-    width (float):            Width of the bins. (default: None (automatically determine))
+    Args:
+        x (ndarray or list): Data set bin.
+        limits (list of numeric, optional): Upper and lower limits of data to bin. (default: min and max of x)
+        nbins (int, optional): Number of bins. (default: None (automatically determine))
+        width (float, optional): Width of the bins. (default: None (automatically determine))
 
     Returns:
-    [bin_centers (ndarray), bin_counts (ndarray)]: Centers of bins and their corresonding counts.
+        tuple[ndarray, ndarray]: bin_centers (ndarray) and bin_counts (ndarray).
     '''
     try:
         x = np.array(x)
@@ -174,17 +171,15 @@ def quickSubs(childPlots = None,
 
     Each figure object supplied is added as as a subplot increasing across, then down, the grid.
 
-    Required Params:
-    childPlots (list of Figure): Preexisting Plotly Figure objects to be added. (default: None)
-
-    Optional Params:
-    layoutfig (Figure):          Figure object that specifies formatting of new figure. (default: None (last
-                                   plot of childPlots is used))
-    nrows (int):                 Number of rows of the subplot. (default: None (automatically determine))
-    ncols (int):                 Number of columns of the subplot. (default: None (automatically determine))
+    Args:
+        childPlots (list of Figure): Preexisting Plotly Figure objects to be added. (default: None)
+        layoutfig (Figure, optional): Figure object that specifies formatting of new figure. (default: None)
+        nrows (int, optional): Number of rows of the subplot. (default: None (automatically determine))
+        ncols (int, optional): Number of columns of the subplot. (default: None (automatically determine))
+        output (str, optional): Output format. (default: "png")
 
     Returns:
-    (Figure): New Plotly Figure object containing subplots of all the supplied child plots.
+        Figure: New Plotly Figure object containing subplots of all the supplied child plots.
     '''
     if nrows == None and ncols == None: # we have specified nothing about the grid to use
         ncols = math.ceil(len(childPlots)**0.5)
@@ -270,18 +265,18 @@ def quickScatter(x = None, y = None, xlabel = None, ylabel = None, name = None, 
     y-values, or multiple sets of x-values and y-values.  If multiple sets of y-values, name and mode can be
     lists of len(y).
 
-    Optional Args:
-    x (ndarray or list of ndarray): x-values to plot.
-    y (ndarray or list of ndarray): y-values to plot.
-    xlabel (str or list of str):    x-axis title. (default: None (use variable name))
-    ylabel (str or list of str):    y-axis title. (default: None (use variable name))
-    name (str or list of str):      Names of traces. (default: '')
-    mode (str or list of str):      Trace appearance for Plotly Scatter object. (default: None (automatically determine))
-    template (str):                 Plotly template for formatting Figure. (default: 'simple_white')
-    show (str):                     Method to show the plot. (default: "png", options: valid Plotly output types, None for no output)
+    Args:
+        x (ndarray or list of ndarray, optional): x-values to plot.
+        y (ndarray or list of ndarray, optional): y-values to plot.
+        xlabel (str or list of str, optional): x-axis title. (default: None (use variable name))
+        ylabel (str or list of str, optional): y-axis title. (default: None (use variable name))
+        name (str or list of str, optional): Names of traces. (default: '')
+        template (str, optional): Plotly template for formatting Figure. (default: 'simple_white')
+        mode (str or list of str, optional): Trace appearance for Plotly Scatter object.
+        output (str, optional): Method to show the plot. (default: "png")
 
     Returns:
-    (Figure): the figure object created
+        Figure: the figure object created.
     """
     # if the user did not supply axis names, then we can just use the variable names
     if xlabel is None:
@@ -370,22 +365,20 @@ def quickHist(x,
     """
     Plot a histogram of 1D data.
 
-    Required Params:
-    x (list or ndarray): Collection of numbers to be histogrammed.
-
-    Optional Params:
-    xlabel (string):          Title for the x-axis. (default: None (use variable name))
-    ylabel (string):          Title for the y-axis. (default: None (use variable name))
-    limits (list of numeric): Upper and lower limits of data to bin. (default: min and max of x)
-    nbins (int):              Number of bins. (default: None (automatically determine))
-    width (float):            Width of the bins. (default: None (automatically determine))
-    mode (string):            Y-axis is "counts" or "frequency" (default: "counts")
-    buffer (numeric):         Fraction of the total range that is added to the left and right side of the x-axis. (default: 0.05)
-    template (str):           Plotly template to use. (default: "simple_white")
-    output (str or None):     Method to show the plot. (default: "png", options: valid Plotly output types, None for no output)
+    Args:
+        x (list or ndarray): Collection of numbers to be histogrammed.
+        xlabel (str, optional): Title for the x-axis. (default: None (use variable name))
+        ylabel (str, optional): Title for the y-axis. (default: None (use variable name))
+        limits (list of numeric, optional): Upper and lower limits of data to bin. (default: min and max of x)
+        nbins (int, optional): Number of bins. (default: None (automatically determine))
+        width (float, optional): Width of the bins. (default: None (automatically determine))
+        mode (str, optional): Y-axis is "counts" or "frequency" (default: "counts")
+        orientation (str, optional): Vertical or horizontal orientation. (default: "vertical")
+        template (str, optional): Plotly template to use. (default: "simple_white")
+        output (str, optional): Method to show the plot. (default: "png", options: valid Plotly output types, None for no output)
 
     Returns:
-    (Figure): Plotly Figure object containing the histogram.
+        Figure: Plotly Figure object containing the histogram.
     """
     # if the user did not supply axis names, then we can just use the variable names
     if xlabel is None:
@@ -451,21 +444,19 @@ def plotFit(fit,
     """
     Plot the result of a 1d fit using lmfit
 
-    Required Params:
-    fit (lmfit result object): Results from a lmfit fit.
-
-    Optional Params:
-    resample (int):    Increase the density of model points on the x axis by <resample> times to smooth. (default: 10)
-    residual (bool):   Show the residual. (default: False)
-    components (bool): Show the individual components of the model. (default: False)
-    confidence (int):  Show the <confidence>-sigma confidence interval of the fit. (default: 0)
-    xlabel (str):      x-axis title (default: None (independent variable name))
-    ylabel (str):      y-axis title (default: None (blank))
-    template (str):    Plotly template for formatting Figure. (default: 'simple_white')
-    show (str):        Method to show the plot. (default: "png", options: valid Plotly output types, None for no output)
+    Args:
+        fit (lmfit result object): Results from a lmfit fit.
+        resample (int, optional): Increase the density of model points on the x axis by `resample` times to smooth. (default: 10)
+        residual (bool, optional): Show the residual. (default: False)
+        components (bool, optional): Show the individual components of the model. (default: False)
+        confidence (int, optional): Show the `confidence`-sigma confidence interval of the fit. (default: 0)
+        xlabel (str, optional): x-axis title (default: None (independent variable name))
+        ylabel (str, optional): y-axis title (default: None (blank))
+        template (str, optional): Plotly template for formatting Figure. (default: 'simple_white')
+        output (str, optional): Method to show the plot. (default: "png", options: valid Plotly output types, None for no output)
 
     Returns:
-    (Figure): Plotly Figure object containing the figure.
+        Figure: Plotly Figure object containing the figure.
     """
     
     # Just making some variables for convenience

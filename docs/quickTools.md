@@ -1,0 +1,3 @@
+# Quick Tools
+
+::: codechembook.quickTools
